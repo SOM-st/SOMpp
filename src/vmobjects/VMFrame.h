@@ -181,6 +181,14 @@ public:
     size_t bytecodeIndex{0};
     size_t totalObjectSize;
 
+    void ResetStackPointer() {
+        VMMethod* meth = GetMethod();
+        // Set the stack pointer to its initial value thereby clearing the stack
+        stack_ptr = locals + meth->GetNumberOfLocals() - 1;
+    }
+
+    void ResetBytecodeIndex();
+
 private:
     GCFrame* previousFrame;
     GCFrame* context{nullptr};
