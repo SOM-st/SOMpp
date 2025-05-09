@@ -18,7 +18,7 @@ static vm_oop_t pSignature(vm_oop_t rcvr) {
 }
 
 static void pInvokeOnWith(VMFrame* frame) {
-    // REM: this is a clone with _Primitive::InvokeOn_With_
+    // REM: this is a clone with _Method mInvokeOnWith
     auto* args = static_cast<VMArray*>(frame->Pop());
     auto* rcvr = frame->Pop();
     auto* mthd = static_cast<VMInvokable*>(frame->Pop());
