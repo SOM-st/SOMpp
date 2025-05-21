@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test_soms:
+    name: Run (Compiler=${{matrix.compiler}} GC=${{matrix.gc}} ${{matrix.integers}} -DUSE_VECTOR_PRIMITIVES=${{matrix.vector}})
     runs-on: ubuntu-24.04
     # continue-on-error: true
     strategy:
@@ -15,6 +16,7 @@ jobs:
           - "-DUSE_TAGGING=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=false"
+        vector: [false, true]
 
     steps:
       - name: Checkout SOM Repository
@@ -25,6 +27,11 @@ jobs:
       - name: Install Apt Packages
         run: |
           sudo apt-get install libcppunit-dev
+
+      - name: Install Pytest
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pytest
 
       - name: Install Clang 20
         run: |
@@ -52,16 +59,20 @@ jobs:
             export CXX=g++
           fi
           echo $CC $CXX
-          echo cmake . -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }}
+          echo cmake . -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }} -DUSE_VECTOR_PRIMITIVES=${{matrix.vector}}
           mkdir cmake-build
           cd cmake-build
-          cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }} -DCMAKE_BUILD_TYPE=Debug
+          cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }} -DCMAKE_BUILD_TYPE=Debug -DUSE_VECTOR_PRIMITIVES=${{matrix.vector}}
           make -j5
 
       - name: Run Unit Tests
         run: |
           cd cmake-build
           ./unittests -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
+
+      - name: Run Integration Tests
+        run: | 
+          EXECUTABLE=./cmake-build/SOM++ CLASSPATH=./Smalltalk pytest
 
       - name: Run Tests on SOM VM
         run: |

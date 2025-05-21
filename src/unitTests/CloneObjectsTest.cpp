@@ -169,7 +169,8 @@ void CloneObjectsTest::testCloneBlock() {
 }
 void CloneObjectsTest::testClonePrimitive() {
     VMSymbol* primitiveSymbol = NewSymbol("myPrimitive");
-    VMPrimitive* orig = VMPrimitive::GetEmptyPrimitive(primitiveSymbol, false);
+    auto* orig = dynamic_cast<VMPrimitive*>(
+        VMPrimitive::GetEmptyPrimitive(primitiveSymbol, false));
     VMPrimitive* clone = orig->CloneForMovingGC();
     CPPUNIT_ASSERT_EQUAL_MESSAGE("signature differs!!", orig->signature,
                                  clone->signature);

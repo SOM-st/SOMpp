@@ -46,6 +46,16 @@ public:
         assert(VMArrayNumberOfFields == 0);
     }
 
+    explicit VMArray(size_t arraySize,
+                     size_t additionalBytes,
+                     size_t nillableFrom)
+        : VMObject(arraySize +
+                       0 /* VMArray is not allowed to have any fields itself */,
+                   additionalBytes + sizeof(VMArray),
+                   nillableFrom) {
+        assert(VMArrayNumberOfFields == 0);
+    }
+
     // VMArray doesn't need to customize `void WalkObjects(walk_heap_fn)`,
     // because it doesn't need anything special.
 
