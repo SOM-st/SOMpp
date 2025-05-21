@@ -15,7 +15,7 @@ jobs:
         cmake_flags:
           - "-DUSE_TAGGING=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"
-          - "-DUSE_TAGGING=false -DCACHE_INTEGER=false"
+          - "-DUSE_TAGGING=false -DCACHE_INTEGER=false -DUSE_VECTOR_PRIMITIVES=false"
 
     steps:
       - name: Checkout SOM Repository

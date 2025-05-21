@@ -41,6 +41,14 @@
 
 class ClassGenerationContext;
 
+enum PrimInstallResult : uint8_t {
+    NULL_ARG,
+    NULL_IN_INVOKABLES,
+    HASH_MISMATCH,
+    INSTALLED_REPLACED,
+    INSTALLED_ADDED
+};
+
 class VMClass : public VMObject {
 public:
     typedef GCClass Stored;
@@ -62,7 +70,9 @@ public:
     void SetInstanceInvokable(size_t index, VMInvokable* invokable);
     VMInvokable* LookupInvokable(VMSymbol* name);
     int64_t LookupFieldIndex(VMSymbol* name) const;
-    bool AddInstanceInvokable(VMInvokable* invokable);
+    PrimInstallResult InstallPrimitive(VMInvokable* invokable,
+                                       size_t bytecodeHash,
+                                       bool reportHashMismatch);
     [[nodiscard]] VMSymbol* GetInstanceFieldName(size_t index) const;
     [[nodiscard]] size_t GetNumberOfInstanceFields() const;
     [[nodiscard]] bool HasPrimitives() const;
