@@ -26,6 +26,8 @@
  THE SOFTWARE.
  */
 
+#include <assert.h>
+
 #include "../misc/defs.h"
 #include "../vmobjects/ObjectFormats.h"
 #include "../vmobjects/VMFrame.h"
@@ -61,6 +63,12 @@ public:
     static void SendUnknownGlobal(VMSymbol* globalName);
 
     static inline size_t GetBytecodeIndex() { return bytecodeIndexGlobal; }
+
+    static void ResetBytecodeIndex(VMFrame* forFrame) {
+        assert(frame == forFrame);
+        assert(forFrame != nullptr);
+        bytecodeIndexGlobal = 0;
+    }
 
 private:
     static vm_oop_t GetSelf();

@@ -32,6 +32,7 @@
 #include <string>
 
 #include "../compiler/Disassembler.h"
+#include "../interpreter/Interpreter.h"
 #include "../memory/Heap.h"
 #include "../misc/defs.h"
 #include "../vm/Globals.h"
@@ -255,4 +256,9 @@ void VMFrame::CopyArgumentsFrom(VMFrame* frame) {
 
 std::string VMFrame::AsDebugString() const {
     return "VMFrame(" + GetMethod()->AsDebugString() + ")";
+}
+
+void VMFrame::ResetBytecodeIndex() {
+    bytecodeIndex = 0;
+    Interpreter::ResetBytecodeIndex(this);
 }

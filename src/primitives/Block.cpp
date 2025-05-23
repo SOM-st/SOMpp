@@ -23,3 +23,16 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
  */
+
+#include "Block.h"
+
+#include "../vmobjects/VMFrame.h"
+
+static void bRestart(VMFrame* frame) {
+    frame->ResetBytecodeIndex();
+    frame->ResetStackPointer();
+}
+
+_Block::_Block() {
+    Add("restart", &bRestart, false);
+}

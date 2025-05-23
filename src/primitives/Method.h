@@ -6,6 +6,4 @@
 class _Method : public PrimitiveContainer {
 public:
     _Method();
-
-    void InvokeOn_With_(VMFrame*);
 };

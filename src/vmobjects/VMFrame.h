@@ -52,8 +52,8 @@ public:
           arguments((gc_oop_t*)&(stack_ptr) + 1),
           locals(arguments + method->GetNumberOfArguments()),
           stack_ptr(locals + method->GetNumberOfLocals() - 1) {
-        // initilize all other fields. Don't need to initalize arguments,
-        // because they iwll be copied in still
+        // initialize all other fields. Don't need to initialize arguments,
+        // because they will be copied in still
         // --> until end of Frame
         auto* end = (gc_oop_t*)SHIFTED_PTR(this, totalObjectSize);
         size_t i = 0;
@@ -180,6 +180,14 @@ public:
 
     size_t bytecodeIndex{0};
     size_t totalObjectSize;
+
+    void ResetStackPointer() {
+        VMMethod* meth = GetMethod();
+        // Set the stack pointer to its initial value thereby clearing the stack
+        stack_ptr = locals + meth->GetNumberOfLocals() - 1;
+    }
+
+    void ResetBytecodeIndex();
 
 private:
     GCFrame* previousFrame;
