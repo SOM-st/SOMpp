@@ -31,6 +31,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -42,7 +43,10 @@
 #include "../compiler/SourcecodeCompiler.h"
 #include "../interpreter/bytecodes.h"
 #include "../memory/Heap.h"
+#include "../misc/Hasher.h"
 #include "../misc/defs.h"
+#include "../primitives/Vector.h"
+#include "../primitivesCore/PrimitiveLoader.h"
 #include "../vmobjects/IntegerBox.h"
 #include "../vmobjects/ObjectFormats.h"
 #include "../vmobjects/VMArray.h"
@@ -56,6 +60,7 @@
 #include "../vmobjects/VMObject.h"
 #include "../vmobjects/VMObjectBase.h"
 #include "../vmobjects/VMString.h"
+#include "../vmobjects/VMVector.h"
 #include "Globals.h"
 #include "IsValidObject.h"
 #include "LogAllocation.h"
@@ -382,6 +387,7 @@ VMObject* Universe::InitializeGlobals() {
     nilClass = store_root(NewSystemClass());
     classClass = store_root(NewSystemClass());
     arrayClass = store_root(NewSystemClass());
+    vectorClass = store_root(NewSystemClass());
     symbolClass = store_root(NewSystemClass());
     methodClass = store_root(NewSystemClass());
     integerClass = store_root(NewSystemClass());
@@ -397,6 +403,8 @@ VMObject* Universe::InitializeGlobals() {
                           "Metaclass");
     InitializeSystemClass(load_ptr(nilClass), load_ptr(objectClass), "Nil");
     InitializeSystemClass(load_ptr(arrayClass), load_ptr(objectClass), "Array");
+    InitializeSystemClass(load_ptr(vectorClass), load_ptr(objectClass),
+                          "Vector");
     InitializeSystemClass(load_ptr(methodClass), load_ptr(arrayClass),
                           "Method");
     InitializeSystemClass(load_ptr(stringClass), load_ptr(objectClass),
@@ -424,6 +432,7 @@ VMObject* Universe::InitializeGlobals() {
     LoadSystemClass(load_ptr(metaClassClass));
     LoadSystemClass(load_ptr(nilClass));
     LoadSystemClass(load_ptr(arrayClass));
+    LoadSystemClass(load_ptr(vectorClass));
     LoadSystemClass(load_ptr(methodClass));
     LoadSystemClass(load_ptr(symbolClass));
     LoadSystemClass(load_ptr(integerClass));
@@ -565,6 +574,34 @@ VMClass* Universe::LoadClassBasic(VMSymbol* name, VMClass* systemClass) {
                 Disassembler::Dump(result->GetClass());
                 Disassembler::Dump(result);
             }
+
+            /* This section can be used to delay the loading of primitives */
+
+            // Now load our Vector class and add its primitives
+            if (sName == "Vector" && USE_VECTOR_PRIMITIVES == true) {
+                if (systemClass != nullptr) {
+                    if (systemClass->GetName()->GetStdString() == "Vector") {
+                        // Like this to pass clang-tidy checks
+                        const ifstream hashingRead{};
+                        std::string fname = i;
+                        fname += fileSeparator;
+                        fname += sName;
+                        fname += ".som";
+
+                        const std::string file = Hasher::GetFile(fname);
+                        const size_t hash = Hasher::HashString(file);
+
+                        auto* primitiveContainer =
+                            PrimitiveLoader::GetInstance()->GetObject("Vector");
+                        auto* vectorInstance =
+                            dynamic_cast<_Vector*>(primitiveContainer);
+                        if (vectorInstance != nullptr) {
+                            // Now add primitives
+                            vectorInstance->LateInitialize(hash);
+                        }
+                    }
+                }
+            }
             return result;
         }
     }
@@ -588,9 +625,24 @@ void Universe::LoadSystemClass(VMClass* systemClass) {
         Quit(ERR_FAIL);
     }
 
-    if (result->HasPrimitives() || result->GetClass()->HasPrimitives()) {
+    // Vector has primitive methods and should be loaded (This is temporary)
+    if (result->HasPrimitives() || result->GetClass()->HasPrimitives() ||
+        (result->GetName()->GetStdString() == "Vector" &&
+         USE_VECTOR_PRIMITIVES == true)) {
         result->LoadPrimitives();
     }
+}
+
+// Should create a new instance of Vector
+VMVector* Universe::NewVector(size_t size, VMClass* cls) {
+    vm_oop_t first = NEW_INT(1);
+    vm_oop_t last = NEW_INT(1);
+    auto* storageArray = NewArray(size);
+    auto* result =
+        new (GetHeap<HEAP_CLS>(), 0) VMVector(first, last, storageArray);
+    result->SetClass(cls);
+    LOG_ALLOCATION("VMVector", result->GetObjectSize());
+    return result;
 }
 
 VMArray* Universe::NewArray(size_t size) {
@@ -776,6 +828,7 @@ void Universe::WalkGlobals(walk_heap_fn walk) {
     nilClass = static_cast<GCClass*>(walk(nilClass));
     integerClass = static_cast<GCClass*>(walk(integerClass));
     arrayClass = static_cast<GCClass*>(walk(arrayClass));
+    vectorClass = static_cast<GCClass*>(walk(vectorClass));
     methodClass = static_cast<GCClass*>(walk(methodClass));
     symbolClass = static_cast<GCClass*>(walk(symbolClass));
     primitiveClass = static_cast<GCClass*>(walk(primitiveClass));

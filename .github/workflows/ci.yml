@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test_soms:
+    name: Run (Compiler=${{matrix.compiler}} GC=${{matrix.gc}} ${{matrix.integers}} -DUSE_VECTOR_PRIMITIVES=${{matrix.vector}})
     runs-on: ubuntu-24.04
     # continue-on-error: true
     strategy:
@@ -15,6 +16,7 @@ jobs:
           - "-DUSE_TAGGING=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=false"
+        vector: [false, true]
 
     steps:
       - name: Checkout SOM Repository
@@ -49,10 +51,10 @@ jobs:
             export CXX=g++
           fi
           echo $CC $CXX
-          echo cmake . -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }}
+          echo cmake . -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }} -DUSE_VECTOR_PRIMITIVES=${{matrix.vector}}
           mkdir cmake-build
           cd cmake-build
-          cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }} -DCMAKE_BUILD_TYPE=Debug
+          cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }} -DCMAKE_BUILD_TYPE=Debug -DUSE_VECTOR_PRIMITIVES=${{matrix.vector}}
           make -j5
 
       - name: Run Unit Tests

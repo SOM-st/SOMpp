@@ -59,6 +59,7 @@ public:
     // VMObject instanciation methods. These should probably be refactored to a
     // new class
     static VMArray* NewArray(size_t /*size*/);
+    static VMVector* NewVector(size_t /*size*/, VMClass* cls);
 
     static VMArray* NewArrayList(std::vector<vm_oop_t>& list);
     static VMArray* NewArrayList(std::vector<VMInvokable*>& list);

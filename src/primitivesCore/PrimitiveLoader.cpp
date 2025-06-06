@@ -40,13 +40,20 @@
 #include "../primitives/String.h"
 #include "../primitives/Symbol.h"
 #include "../primitives/System.h"
+#include "../primitives/Vector.h"
 #include "../vmobjects/ObjectFormats.h"
 #include "PrimitiveContainer.h"
 
 PrimitiveLoader PrimitiveLoader::loader;
 
+PrimitiveLoader* PrimitiveLoader::GetInstance() {
+    return &loader;
+}
+
 PrimitiveLoader::PrimitiveLoader() {
     AddPrimitiveObject("Array", new _Array());
+    // Vector caled but no primitive methods registered (Check LoadClassBasic)
+    AddPrimitiveObject("Vector", new _Vector());
     AddPrimitiveObject("Block", new _Block());
     AddPrimitiveObject("Class", new _Class());
     AddPrimitiveObject("Double", new _Double());
@@ -63,6 +70,14 @@ PrimitiveLoader::~PrimitiveLoader() {
     for (const auto& p : primitiveObjects) {
         delete p.second;
     }
+}
+
+PrimitiveContainer* PrimitiveLoader::GetObject(const std::string& name) {
+    auto it = primitiveObjects.find(name);
+    if (it != primitiveObjects.end()) {
+        return it->second;
+    }
+    return nullptr;
 }
 
 void PrimitiveLoader::AddPrimitiveObject(const std::string& name,
