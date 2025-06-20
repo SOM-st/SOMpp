@@ -19,9 +19,9 @@ public:
     void InlineInto(MethodGenerationContext& mgenc,
                     bool mergeScope = true) final;
 
-    static VMSafePrimitive* GetSafeUnary(VMSymbol* sig, UnaryPrim prim);
-    static VMSafePrimitive* GetSafeBinary(VMSymbol* sig, BinaryPrim prim);
-    static VMSafePrimitive* GetSafeTernary(VMSymbol* sig, TernaryPrim prim);
+    static VMInvokable* GetSafeUnary(VMSymbol* sig, UnaryPrim prim);
+    static VMInvokable* GetSafeBinary(VMSymbol* sig, BinaryPrim prim);
+    static VMInvokable* GetSafeTernary(VMSymbol* sig, TernaryPrim prim);
 
     [[nodiscard]] std::string AsDebugString() const final;
 

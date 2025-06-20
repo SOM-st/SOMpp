@@ -76,6 +76,7 @@
 // Forward definitions of VM object classes
 class AbstractVMObject;
 class VMArray;
+class VMVector;
 class VMBlock;
 class VMClass;
 class VMDouble;
@@ -144,6 +145,7 @@ class GCObject         : public GCAbstractObject { public: typedef VMObject     
 class GCFrame          : public GCAbstractObject { public: typedef VMFrame          Loaded; };
 class GCClass          : public GCObject         { public: typedef VMClass          Loaded; };
 class GCArray          : public GCObject         { public: typedef VMArray          Loaded; };
+class GCVector         : public GCObject         { public: typedef VMVector         Loaded; };
 class GCBlock          : public GCObject         { public: typedef VMBlock          Loaded; };
 class GCDouble         : public GCAbstractObject { public: typedef VMDouble         Loaded; };
 class GCInteger        : public GCAbstractObject { public: typedef VMInteger        Loaded; };

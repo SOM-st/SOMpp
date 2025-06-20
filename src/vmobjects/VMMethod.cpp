@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <functional>
 #include <queue>
 #include <string>
 
@@ -707,4 +708,12 @@ bool operator<(const BackJumpPatch& a, const BackJumpPatch& b) {
 void VMMethod::MergeScopeInto(MethodGenerationContext& mgenc) {
     assert(lexicalScope != nullptr);
     mgenc.MergeIntoScope(*lexicalScope);
+}
+
+size_t VMMethod::GetBytecodeHash() const {
+    const std::hash<std::string> hashFn;
+    // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+    const char* const bytecodePtr = reinterpret_cast<char*>(bytecodes);
+    std::string const bytecodeString(bytecodePtr, bcLength);
+    return hashFn(bytecodeString);
 }

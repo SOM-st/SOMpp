@@ -35,8 +35,8 @@ class VMPrimitive : public VMInvokable {
 public:
     typedef GCPrimitive Stored;
 
-    static VMPrimitive* GetEmptyPrimitive(VMSymbol* sig, bool classSide);
-    static VMPrimitive* GetFramePrim(VMSymbol* sig, FramePrim prim);
+    static VMInvokable* GetEmptyPrimitive(VMSymbol* sig, bool classSide);
+    static VMInvokable* GetFramePrim(VMSymbol* sig, FramePrim prim);
 
     VMPrimitive(VMSymbol* sig, FramePrim prim) : VMInvokable(sig), prim(prim) {
         write_barrier(this, sig);

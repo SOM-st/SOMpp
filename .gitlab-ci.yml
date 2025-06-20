@@ -72,14 +72,15 @@ build_and_test:
     - cd release
     - cmake .. $INTEGERS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Release
     - make -j
+    - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
     - mv SOM++ ../$NAME
     - cd ..
 
     - cd debug
     - cmake .. $INTEGERS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Debug
     - make -j
-    - ./SOM++ -cp ../Smalltalk ../TestSuite/TestHarness.som
-    - ./unittests -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
+    - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
+    - ./unittests -cfg -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
     - cd ..
 
     - |+
