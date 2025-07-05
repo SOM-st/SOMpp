@@ -1,13 +1,13 @@
 #include "HashingTest.h"
 
 #include <cppunit/TestAssert.h>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <ios>
+#include <sstream>
 
 #include "../misc/Murmur3Hash.h"
-#include "cstddef"
-#include "cstdint"
-#include "cstring"
-#include "ios"
-#include "sstream"
 
 void HashingTest::testMurmur3HashWithSeeds() {
     // Hex keys
