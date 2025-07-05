@@ -62,6 +62,9 @@
 		0A1C98762C5526AD00735850 /* DebugCopyingCollector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A1C98752C5526AD00735850 /* DebugCopyingCollector.cpp */; };
 		0A1C98772C5526AD00735850 /* DebugCopyingCollector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A1C98752C5526AD00735850 /* DebugCopyingCollector.cpp */; };
 		0A32B7FE199D6143002825DF /* IntegerBox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A32B7FC199D6143002825DF /* IntegerBox.cpp */; };
+		0A32D54E2E198C610019DDCD /* Murmur3Hash.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A32D54D2E198C610019DDCD /* Murmur3Hash.cpp */; };
+		0A32D54F2E198C610019DDCD /* Murmur3Hash.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A32D54D2E198C610019DDCD /* Murmur3Hash.cpp */; };
+		0A32D5552E198EC40019DDCD /* HashingTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A32D5542E198EC40019DDCD /* HashingTest.cpp */; };
 		0A3A3C921A5D546D004CB03B /* Array.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F5203120FA6624C00E75857 /* Array.cpp */; };
 		0A3A3C931A5D546D004CB03B /* Block.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F5203160FA6624C00E75857 /* Block.cpp */; };
 		0A3A3C941A5D546D004CB03B /* Class.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3F5203180FA6624C00E75857 /* Class.cpp */; };
@@ -224,6 +227,10 @@
 		0A32B7FC199D6143002825DF /* IntegerBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IntegerBox.cpp; sourceTree = "<group>"; };
 		0A32B7FD199D6143002825DF /* IntegerBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntegerBox.h; sourceTree = "<group>"; };
 		0A32B80119A12A03002825DF /* VMObjectBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VMObjectBase.h; sourceTree = "<group>"; };
+		0A32D54C2E198C610019DDCD /* Murmur3Hash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Murmur3Hash.h; sourceTree = "<group>"; };
+		0A32D54D2E198C610019DDCD /* Murmur3Hash.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Murmur3Hash.cpp; sourceTree = "<group>"; };
+		0A32D5532E198EC40019DDCD /* HashingTest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = HashingTest.h; path = unitTests/HashingTest.h; sourceTree = "<group>"; };
+		0A32D5542E198EC40019DDCD /* HashingTest.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = HashingTest.cpp; path = unitTests/HashingTest.cpp; sourceTree = "<group>"; };
 		0A335F6B1832D64100D7CFC8 /* Method.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Method.cpp; sourceTree = "<group>"; };
 		0A335F6C1832D64100D7CFC8 /* Method.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Method.h; sourceTree = "<group>"; };
 		0A335F6F1832D65100D7CFC8 /* Primitive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Primitive.cpp; sourceTree = "<group>"; };
@@ -255,7 +262,6 @@
 		0AB80AD52C392BAD006B6419 /* Print.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Print.h; sourceTree = "<group>"; };
 		0AB80AD62C3947F7006B6419 /* Globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Globals.h; sourceTree = "<group>"; };
 		0AB80AD72C394806006B6419 /* Globals.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Globals.cpp; sourceTree = "<group>"; };
-		0AB80ADA2C39AC27006B6419 /* InterpreterLoop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InterpreterLoop.h; sourceTree = "<group>"; };
 		0AEFFE522E01A97E00CA4C4C /* Vector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Vector.h; sourceTree = "<group>"; };
 		0AEFFE532E01A97E00CA4C4C /* Vector.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Vector.cpp; sourceTree = "<group>"; };
 		0AEFFE562E01A99300CA4C4C /* VMVector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VMVector.h; sourceTree = "<group>"; };
@@ -445,13 +451,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0A1886C71832BBC900A2CBCA /* SOM++ */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "SOM++";
-			sourceTree = "<group>";
-		};
 		0A67EA7A19ACD44000830E3B /* unittests */ = {
 			isa = PBXGroup;
 			children = (
@@ -459,6 +458,8 @@
 				0A67EA7019ACD43A00830E3B /* CloneObjectsTest.cpp */,
 				0A67EA7119ACD43A00830E3B /* main.cpp */,
 				0A67EAA319ACE09700830E3B /* CloneObjectsTest.h */,
+				0A32D5532E198EC40019DDCD /* HashingTest.h */,
+				0A32D5542E198EC40019DDCD /* HashingTest.cpp */,
 				0A67EAA519ACE09700830E3B /* WalkObjectsTest.h */,
 				0A67EAA619ACE09700830E3B /* WriteBarrierTest.h */,
 				0A67EA7319ACD43A00830E3B /* WalkObjectsTest.cpp */,
@@ -486,7 +487,6 @@
 				E18AE29C0FB1C45E00EE6540 /* Examples */,
 				E18AE27F0FB1C44700EE6540 /* Smalltalk */,
 				3F5202EF0FA6624C00E75857 /* src */,
-				0A1886C71832BBC900A2CBCA /* SOM++ */,
 				0A1886C61832BBC900A2CBCA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -540,7 +540,6 @@
 				3F5203020FA6624C00E75857 /* bytecodes.h */,
 				3F5203030FA6624C00E75857 /* Interpreter.cpp */,
 				3F5203040FA6624C00E75857 /* Interpreter.h */,
-				0AB80ADA2C39AC27006B6419 /* InterpreterLoop.h */,
 			);
 			path = interpreter;
 			sourceTree = "<group>";
@@ -577,6 +576,8 @@
 				3F52030C0FA6624C00E75857 /* debug.h */,
 				3F52030D0FA6624C00E75857 /* defs.h */,
 				3F52030F0FA6624C00E75857 /* gettimeofday.h */,
+				0A32D54C2E198C610019DDCD /* Murmur3Hash.h */,
+				0A32D54D2E198C610019DDCD /* Murmur3Hash.cpp */,
 				0A1887371832C12E00A2CBCA /* Timer.cpp */,
 				0A1887381832C12E00A2CBCA /* Timer.h */,
 				0A707528297DF36F00EB9F59 /* ParseInteger.h */,
@@ -962,6 +963,7 @@
 				0A1886FE1832BCF500A2CBCA /* VMEvaluationPrimitive.cpp in Sources */,
 				0A1887311832C10E00A2CBCA /* CopyingCollector.cpp in Sources */,
 				0A1886DE1832BCC800A2CBCA /* Disassembler.cpp in Sources */,
+				0A32D54F2E198C610019DDCD /* Murmur3Hash.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -969,6 +971,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A32D5552E198EC40019DDCD /* HashingTest.cpp in Sources */,
 				0A3A3CAB1A5D546D004CB03B /* System.cpp in Sources */,
 				0A3A3CA31A5D546D004CB03B /* Class.cpp in Sources */,
 				0A67EA9019ACD83200830E3B /* Lexer.cpp in Sources */,
@@ -991,6 +994,7 @@
 				0AEFFE582E01A99300CA4C4C /* VMVector.cpp in Sources */,
 				0A67EA7919ACD43A00830E3B /* WriteBarrierTest.cpp in Sources */,
 				0A67EA9819ACD85300830E3B /* GenerationalCollector.cpp in Sources */,
+				0A32D54E2E198C610019DDCD /* Murmur3Hash.cpp in Sources */,
 				0A67EA7B19ACD72C00830E3B /* VMInvokable.cpp in Sources */,
 				0A67EA9119ACD83200830E3B /* MethodGenerationContext.cpp in Sources */,
 				0A3A3CA61A5D546D004CB03B /* Method.cpp in Sources */,
