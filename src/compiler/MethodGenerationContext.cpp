@@ -284,7 +284,7 @@ VMTrivialMethod* MethodGenerationContext::assembleFieldSetter() {
     return MakeSetter(signature, arguments, fieldIndex, argIndex);
 }
 
-VMPrimitive* MethodGenerationContext::AssemblePrimitive(bool classSide) {
+VMInvokable* MethodGenerationContext::AssemblePrimitive(bool classSide) {
     return VMPrimitive::GetEmptyPrimitive(signature, classSide);
 }
 
