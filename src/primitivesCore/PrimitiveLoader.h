@@ -51,12 +51,14 @@ public:
 
     static void InstallPrimitives(const std::string& cname,
                                   VMClass* clazz,
-                                  bool classSide);
+                                  bool classSide,
+                                  bool showWarning);
 
 private:
     void installPrimitives(const std::string& cname,
                            VMClass* clazz,
-                           bool classSide);
+                           bool classSide,
+                           bool showWarning);
 
     bool supportsClass(const std::string& name);
 

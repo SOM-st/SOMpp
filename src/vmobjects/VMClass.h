@@ -66,7 +66,7 @@ public:
     [[nodiscard]] VMSymbol* GetInstanceFieldName(size_t index) const;
     [[nodiscard]] size_t GetNumberOfInstanceFields() const;
     [[nodiscard]] bool HasPrimitives() const;
-    void LoadPrimitives();
+    void LoadPrimitives(bool showWarning);
     [[nodiscard]] VMClass* CloneForMovingGC() const override;
 
     [[nodiscard]] std::string AsDebugString() const override;

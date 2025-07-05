@@ -198,12 +198,13 @@ bool VMClass::HasPrimitives() const {
     return false;
 }
 
-void VMClass::LoadPrimitives() {
+void VMClass::LoadPrimitives(bool showWarning) {
     std::string const cname = load_ptr(name)->GetStdString();
 
     if (hasPrimitivesFor(cname)) {
-        PrimitiveLoader::InstallPrimitives(cname, this, false);
-        PrimitiveLoader::InstallPrimitives(cname, GetClass(), true);
+        PrimitiveLoader::InstallPrimitives(cname, this, false, showWarning);
+        PrimitiveLoader::InstallPrimitives(
+            cname, GetClass(), true, showWarning);
     }
 }
 

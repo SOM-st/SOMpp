@@ -65,7 +65,9 @@ void PrimitiveContainer::Add(const char* name,
     ternaryPrims[std::string(name)] = {routine, classSide};
 }
 
-void PrimitiveContainer::InstallPrimitives(VMClass* clazz, bool classSide) {
+void PrimitiveContainer::InstallPrimitives(VMClass* clazz,
+                                           bool classSide,
+                                           bool showWarning) {
     for (auto const& p : unaryPrims) {
         assert(p.second.IsValid());
         if (classSide != p.second.isClassSide) {
@@ -74,7 +76,8 @@ void PrimitiveContainer::InstallPrimitives(VMClass* clazz, bool classSide) {
 
         VMSymbol* sig = SymbolFor(p.first);
         if (clazz->AddInstanceInvokable(
-                VMSafePrimitive::GetSafeUnary(sig, p.second))) {
+                VMSafePrimitive::GetSafeUnary(sig, p.second)) &&
+            showWarning) {
             cout << "Warn: Primitive " << p.first
                  << " is not in class definition for class "
                  << clazz->GetName()->GetStdString() << '\n';
@@ -89,7 +92,8 @@ void PrimitiveContainer::InstallPrimitives(VMClass* clazz, bool classSide) {
 
         VMSymbol* sig = SymbolFor(p.first);
         if (clazz->AddInstanceInvokable(
-                VMSafePrimitive::GetSafeBinary(sig, p.second))) {
+                VMSafePrimitive::GetSafeBinary(sig, p.second)) &&
+            showWarning) {
             cout << "Warn: Primitive " << p.first
                  << " is not in class definition for class "
                  << clazz->GetName()->GetStdString() << '\n';
@@ -104,7 +108,8 @@ void PrimitiveContainer::InstallPrimitives(VMClass* clazz, bool classSide) {
 
         VMSymbol* sig = SymbolFor(p.first);
         if (clazz->AddInstanceInvokable(
-                VMSafePrimitive::GetSafeTernary(sig, p.second))) {
+                VMSafePrimitive::GetSafeTernary(sig, p.second)) &&
+            showWarning) {
             cout << "Warn: Primitive " << p.first
                  << " is not in class definition for class "
                  << clazz->GetName()->GetStdString() << '\n';
@@ -119,7 +124,8 @@ void PrimitiveContainer::InstallPrimitives(VMClass* clazz, bool classSide) {
 
         VMSymbol* sig = SymbolFor(p.first);
         if (clazz->AddInstanceInvokable(
-                VMPrimitive::GetFramePrim(sig, p.second))) {
+                VMPrimitive::GetFramePrim(sig, p.second)) &&
+            showWarning) {
             cout << "Warn: Primitive " << p.first
                  << " is not in class definition for class "
                  << clazz->GetName()->GetStdString() << '\n';
