@@ -23,30 +23,32 @@ build_and_test:
           - yuria3
         COMPILER: [clang]
         GC: [COPYING]
-        INTEGERS:
+        CMAKE_FLAGS:
           - "-DUSE_TAGGING=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=false"
+          - "-DUSE_TAGGING=false -DCACHE_INTEGER=false -DUSE_VECTOR_PRIMITIVES=false"
 
       # Track GCC only for one configuration
       - MACHINE: [yuria, yuria2, yuria3]
         COMPILER: [gcc]
         GC: [COPYING]
-        INTEGERS: ["-DUSE_TAGGING=true"]
+        CMAKE_FLAGS: ["-DUSE_TAGGING=true"]
 
       - MACHINE: [zullie1]
         COMPILER: [clang]
         GC: [GENERATIONAL]
-        INTEGERS:
+        CMAKE_FLAGS:
           - "-DUSE_TAGGING=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=false"
+          - "-DUSE_TAGGING=false -DCACHE_INTEGER=false -DUSE_VECTOR_PRIMITIVES=false"
 
       # Mark-Sweep working, but not super exciting
       - MACHINE: [yuria, yuria2, yuria3]
         COMPILER: [gcc]
         GC: [MARK_SWEEP]
-        INTEGERS: ["-DUSE_TAGGING=true"]
+        CMAKE_FLAGS: ["-DUSE_TAGGING=true"]
 
   tags: [$MACHINE]
   script:
@@ -59,25 +61,28 @@ build_and_test:
     # compose a name for this configuration
     - |+
       export NAME="som-$COMPILER-$GC"
-      if [[ $INTEGERS =~ "USE_TAGGING=true" ]]; then
+      if [[ $CMAKE_FLAGS =~ "USE_TAGGING=true" ]]; then
         NAME="$NAME-inttag"
       else
         NAME="$NAME-intbox"
       fi
-      if [[ $INTEGERS =~ "CACHE_INTEGER=true" ]]; then
+      if [[ $CMAKE_FLAGS =~ "CACHE_INTEGER=true" ]]; then
         NAME="$NAME-intcache"
+      fi
+      if [[ $CMAKE_FLAGS =~ "DUSE_VECTOR_PRIMITIVES=false" ]]; then
+        NAME="$NAME-somvec"
       fi
       NAME=`echo "$NAME" | tr '[:upper:]' '[:lower:]'`
 
     - cd release
-    - cmake .. $INTEGERS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Release
+    - cmake .. $CMAKE_FLAGS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Release
     - make -j
     - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
     - mv SOM++ ../$NAME
     - cd ..
 
     - cd debug
-    - cmake .. $INTEGERS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Debug
+    - cmake .. $CMAKE_FLAGS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Debug
     - make -j
     - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
     - ./unittests -cfg -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
@@ -88,7 +93,7 @@ build_and_test:
       if [ "$COMPILER" = "clang" ]; then
         # this is to load balance the SomSom testing
         # only when compiling with Clang, and only on one machine for each integer configuration
-        if [ "$MACHINE $INTEGERS" = "zullie1 -DUSE_TAGGING=true" ] || [ "$MACHINE $INTEGERS" = "yuria2 -DUSE_TAGGING=false -DCACHE_INTEGER=true" ] || [ "$MACHINE $INTEGERS" = "yuria3 -DUSE_TAGGING=false -DCACHE_INTEGER=false" ]; then
+        if [ "$MACHINE $CMAKE_FLAGS" = "zullie1 -DUSE_TAGGING=true" ] || [ "$MACHINE $CMAKE_FLAGS" = "yuria2 -DUSE_TAGGING=false -DCACHE_INTEGER=true" ] || [ "$MACHINE $CMAKE_FLAGS" = "yuria3 -DUSE_TAGGING=false -DCACHE_INTEGER=false" ]; then
           ./$NAME -cp Smalltalk:TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects core-lib/SomSom/tests/SomSomTests.som
         fi
       fi
