@@ -30,7 +30,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <functional>
 #include <queue>
 #include <string>
 
@@ -714,12 +713,5 @@ void VMMethod::MergeScopeInto(MethodGenerationContext& mgenc) {
 }
 
 size_t VMMethod::GetBytecodeHash() const {
-    const std::hash<std::string> hashFn;
-    // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-    const char* const bytecodePtr = reinterpret_cast<char*>(bytecodes);
-    return Murmur3Hash::murmur3_32(
-        // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
-        reinterpret_cast<const uint8_t*>(bytecodePtr),
-        strlen(bytecodePtr),
-        0x00000000);
+    return murmur3_32(bytecodes, bcLength, 0x00000000);
 }
