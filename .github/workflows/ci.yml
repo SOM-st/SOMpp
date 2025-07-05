@@ -78,7 +78,7 @@ jobs:
       - name: Clang Tidy
         if: matrix.compiler == 'clang'
         run: |
-          clang-tidy-19 --config-file=.clang-tidy src/**/*.cpp -- -fdiagnostics-absolute-paths -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }} -DUNITTESTS
+          clang-tidy-19 --config-file=.clang-tidy src/*.cpp src/**/*.cpp -- -fdiagnostics-absolute-paths -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }} -DUNITTESTS
 
       - name: Clang Format
         if: matrix.compiler == 'clang' && matrix.gc == 'GENERATIONAL'

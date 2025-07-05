@@ -22,21 +22,15 @@
  THE SOFTWARE.
  */
 
-#include <fstream>
+#include <cstdint>
 #include <iostream>
 
-#include "compiler/ClassGenerationContext.h"
-#include "memory/Heap.h"
 #include "misc/defs.h"
+#include "vm/Print.h"
 #include "vm/Universe.h"
-#include "vmobjects/ObjectFormats.h"
-#include "vmobjects/VMArray.h"
-#include "vmobjects/VMMethod.h"
-#include "vmobjects/VMObject.h"
-#include "vmobjects/VMString.h"
 
 int32_t main(int32_t argc, char** argv) {
-    cout << "This is SOM++" << endl;
+    cout << "This is SOM++" << '\n';
 
     Universe::Start(argc, argv);
 
