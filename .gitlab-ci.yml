@@ -74,18 +74,18 @@ build_and_test:
       fi
       NAME=`echo "$NAME" | tr '[:upper:]' '[:lower:]'`
 
-    - cd release
-    - cmake .. $CMAKE_FLAGS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Release
-    - make -j
-    - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
-    - mv SOM++ ../$NAME
-    - cd ..
-
     - cd debug
     - cmake .. $CMAKE_FLAGS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Debug
     - make -j
     - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
     - ./unittests -cfg -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
+    - cd ..
+
+    - cd release
+    - cmake .. $CMAKE_FLAGS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Release
+    - make -j
+    - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
+    - mv SOM++ ../$NAME
     - cd ..
 
     - |+
