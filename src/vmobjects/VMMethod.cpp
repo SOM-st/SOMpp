@@ -41,6 +41,7 @@
 #include "../interpreter/Interpreter.h"
 #include "../interpreter/bytecodes.h"
 #include "../memory/Heap.h"
+#include "../misc/Murmur3Hash.h"
 #include "../misc/defs.h"
 #include "../vm/Globals.h"
 #include "../vm/Print.h"
@@ -709,4 +710,8 @@ bool operator<(const BackJumpPatch& a, const BackJumpPatch& b) {
 void VMMethod::MergeScopeInto(MethodGenerationContext& mgenc) {
     assert(lexicalScope != nullptr);
     mgenc.MergeIntoScope(*lexicalScope);
+}
+
+size_t VMMethod::GetBytecodeHash() const {
+    return murmur3_32(bytecodes, bcLength, 0x00000000);
 }

@@ -26,6 +26,7 @@
  THE SOFTWARE.
  */
 
+#include <iostream>
 #include <map>
 
 #include "../misc/defs.h"
@@ -40,7 +41,7 @@ public:
     PrimitiveContainer() = default;
     virtual ~PrimitiveContainer() = default;
 
-    void InstallPrimitives(VMClass* clazz, bool classSide);
+    void InstallPrimitives(VMClass* clazz, bool classSide, bool showWarning);
 
     void Add(const char* name, FramePrimitiveRoutine /*routine*/,
              bool classSide);
@@ -51,9 +52,37 @@ public:
     void Add(const char* name, TernaryPrimitiveRoutine /*routine*/,
              bool classSide);
 
+    void Add(const char* name, FramePrimitiveRoutine /*routine*/,
+             bool classSide, size_t hash);
+    void Add(const char* name, UnaryPrimitiveRoutine /*routine*/,
+             bool classSide, size_t hash);
+    void Add(const char* name, BinaryPrimitiveRoutine /*routine*/,
+             bool classSide, size_t hash);
+    void Add(const char* name, TernaryPrimitiveRoutine /*routine*/,
+             bool classSide, size_t hash);
+
+    void Add(const char* name, bool classSide,
+             FramePrimitiveRoutine /*routine*/, size_t hash1,
+             FramePrimitiveRoutine /*routine*/, size_t hash2);
+    void Add(const char* name, bool classSide,
+             UnaryPrimitiveRoutine /*routine*/, size_t hash1,
+             UnaryPrimitiveRoutine /*routine*/, size_t hash2);
+    void Add(const char* name, bool classSide,
+             BinaryPrimitiveRoutine /*routine*/, size_t hash1,
+             BinaryPrimitiveRoutine /*routine*/, size_t hash2);
+    void Add(const char* name, bool classSide,
+             TernaryPrimitiveRoutine /*routine*/, size_t hash1,
+             TernaryPrimitiveRoutine /*routine*/, size_t hash2);
+
 private:
-    std::map<std::string, FramePrim> framePrims;
-    std::map<std::string, UnaryPrim> unaryPrims;
-    std::map<std::string, BinaryPrim> binaryPrims;
-    std::map<std::string, TernaryPrim> ternaryPrims;
+    std::map<std::string, std::pair<FramePrim, FramePrim>> framePrims;
+    std::map<std::string, std::pair<UnaryPrim, UnaryPrim>> unaryPrims;
+    std::map<std::string, std::pair<BinaryPrim, BinaryPrim>> binaryPrims;
+    std::map<std::string, std::pair<TernaryPrim, TernaryPrim>> ternaryPrims;
+
+    template <class PrimT>
+    bool installPrimitives(
+        bool classSide, bool showWarning, VMClass* clazz,
+        std::map<std::string, std::pair<PrimT, PrimT>>& prims,
+        VMInvokable* (*makePrimFn)(VMSymbol* sig, PrimT));
 };
