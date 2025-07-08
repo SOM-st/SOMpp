@@ -81,7 +81,7 @@ private:
     std::map<std::string, std::pair<TernaryPrim, TernaryPrim>> ternaryPrims;
 
     template <class PrimT>
-    void installPrimitives(
+    bool installPrimitives(
         bool classSide, bool showWarning, VMClass* clazz,
         std::map<std::string, std::pair<PrimT, PrimT>>& prims,
         VMInvokable* (*makePrimFn)(VMSymbol* sig, PrimT));

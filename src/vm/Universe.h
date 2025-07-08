@@ -42,7 +42,7 @@ class SourcecodeCompiler;
 // for runtime debug
 extern uint8_t dumpBytecodes;
 extern uint8_t gcVerbosity;
-extern bool printCoreLibMethodHashes;
+extern bool abortOnCoreLibHashMismatch;
 
 using namespace std;
 class Universe {

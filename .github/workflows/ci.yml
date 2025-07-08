@@ -63,6 +63,7 @@ jobs:
         run: |
           cd cmake-build
           ./unittests -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
+          ./SOM++ -prim-hash-check -cp ../Smalltalk ../Examples/Benchmarks/BenchmarkHarness.som VectorBenchmark 1 1
 
       - name: Run Tests on SOM VM
         run: |

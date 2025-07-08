@@ -77,7 +77,7 @@ static gc_oop_t prebuildInts[INT_CACHE_MAX_VALUE - INT_CACHE_MIN_VALUE + 1];
 
 uint8_t dumpBytecodes;
 uint8_t gcVerbosity;
-bool printCoreLibMethodHashes = false;
+bool abortOnCoreLibHashMismatch = false;
 
 static std::string bm_name;
 
@@ -215,8 +215,8 @@ vector<std::string> Universe::handleArguments(int32_t argc, char** argv) {
         } else if ((strncmp(argv[i], "-h", 2) == 0) ||
                    (strncmp(argv[i], "--help", 6) == 0)) {
             printUsageAndExit(argv[0]);
-        } else if ((strncmp(argv[i], "-prim-hashes", 12)) == 0) {
-            printCoreLibMethodHashes = true;
+        } else if ((strncmp(argv[i], "-prim-hash-check", 16)) == 0) {
+            abortOnCoreLibHashMismatch = true;
         } else {
             vector<std::string> extPathTokens = vector<std::string>(2);
             std::string const tmpString = std::string(argv[i]);
@@ -286,10 +286,10 @@ void Universe::printUsageAndExit(char* executable) {
     cout << "         set search path for application classes\n";
     cout << "    -d   enable disassembling (twice for tracing)\n";
     cout << "    -cfg print VM configuration\n";
-    cout << "    -prim-hashes  print hashes of core-lib methods\n";
-    cout << "                  that have primitive replacements and exit with "
-            "error\n";
-    cout << "                  when they do not match expected results\n";
+    cout << "    -prim-hash-check check that method replacements have expected "
+            "hash.\n";
+    cout
+        << "                     Exit with error when a hash does not match.\n";
     cout
         << "    -g   enable garbage collection details:\n"
         << "         1x - print statistics when VM shuts down\n"

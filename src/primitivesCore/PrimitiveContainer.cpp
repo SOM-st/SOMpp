@@ -33,7 +33,9 @@
 #include <string>
 #include <utility>
 
+#include "../vm/Print.h"
 #include "../vm/Symbols.h"
+#include "../vm/Universe.h"
 #include "../vmobjects/VMClass.h"
 #include "../vmobjects/VMInvokable.h"
 #include "../vmobjects/VMPrimitive.h"
@@ -133,10 +135,12 @@ void PrimitiveContainer::Add(const char* name, bool classSide,
 }
 
 template <class PrimT>
-void PrimitiveContainer::installPrimitives(
+bool PrimitiveContainer::installPrimitives(
     bool classSide, bool showWarning, VMClass* clazz,
     std::map<std::string, std::pair<PrimT, PrimT>>& prims,
     VMInvokable* (*makePrimFn)(VMSymbol* sig, PrimT)) {
+    bool hasHashMismatch = false;
+
     for (auto const& p : prims) {
         PrimT prim1 = std::get<0>(p.second);
         PrimT prim2 = std::get<1>(p.second);
@@ -150,6 +154,11 @@ void PrimitiveContainer::installPrimitives(
 
         PrimInstallResult const result = clazz->InstallPrimitive(
             makePrimFn(sig, prim1), prim1.bytecodeHash, !prim2.IsValid());
+        if (!prim2.IsValid()) {
+            hasHashMismatch =
+                hasHashMismatch || result == PrimInstallResult::HASH_MISMATCH;
+        }
+
         if (result == PrimInstallResult::INSTALLED_ADDED && showWarning) {
             cout << "Warn: Primitive " << p.first
                  << " is not in class definition for class "
@@ -157,20 +166,43 @@ void PrimitiveContainer::installPrimitives(
         } else if (result == PrimInstallResult::HASH_MISMATCH &&
                    prim2.IsValid()) {
             assert(prim1.isClassSide == prim2.isClassSide);
-            clazz->InstallPrimitive(makePrimFn(sig, prim2), prim2.bytecodeHash,
-                                    true);
+            PrimInstallResult const result2 = clazz->InstallPrimitive(
+                makePrimFn(sig, prim2), prim2.bytecodeHash, true);
+            hasHashMismatch =
+                hasHashMismatch || result2 == PrimInstallResult::HASH_MISMATCH;
         }
     }
+
+    return hasHashMismatch;
 }
 
 void PrimitiveContainer::InstallPrimitives(VMClass* clazz, bool classSide,
                                            bool showWarning) {
-    installPrimitives(classSide, showWarning, clazz, unaryPrims,
-                      VMSafePrimitive::GetSafeUnary);
-    installPrimitives(classSide, showWarning, clazz, binaryPrims,
-                      VMSafePrimitive::GetSafeBinary);
-    installPrimitives(classSide, showWarning, clazz, ternaryPrims,
-                      VMSafePrimitive::GetSafeTernary);
-    installPrimitives(classSide, showWarning, clazz, framePrims,
-                      VMPrimitive::GetFramePrim);
+    bool hasHashMismatch = false;
+    hasHashMismatch =
+        hasHashMismatch ||
+        installPrimitives(classSide, showWarning, clazz, unaryPrims,
+                          VMSafePrimitive::GetSafeUnary);
+    hasHashMismatch =
+        hasHashMismatch ||
+        installPrimitives(classSide, showWarning, clazz, binaryPrims,
+                          VMSafePrimitive::GetSafeBinary);
+    hasHashMismatch =
+        hasHashMismatch ||
+        installPrimitives(classSide, showWarning, clazz, ternaryPrims,
+                          VMSafePrimitive::GetSafeTernary);
+    hasHashMismatch = hasHashMismatch ||
+                      installPrimitives(classSide, showWarning, clazz,
+                                        framePrims, VMPrimitive::GetFramePrim);
+
+    if (abortOnCoreLibHashMismatch && hasHashMismatch) {
+        ErrorPrint("The implementation of methods in " +
+                   clazz->GetName()->GetStdString() +
+                   " seem to have changed.\n");
+        ErrorPrint(
+            "The primitive implementation in the matching VM class may need to "
+            "be changed. See for instance _Vector::_Vector() in "
+            "primitives/Vector.cpp\n");
+        Quit(1);
+    }
 }

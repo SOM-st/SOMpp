@@ -79,6 +79,7 @@ build_and_test:
     - make -j
     - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
     - ./unittests -cfg -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
+    - ./SOM++ -prim-hash-check -cp ../Smalltalk ../Examples/Benchmarks/BenchmarkHarness.som VectorBenchmark 1 1
     - cd ..
 
     - cd release
