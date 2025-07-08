@@ -38,7 +38,6 @@
 #include "../vm/Globals.h"
 #include "../vm/IsValidObject.h"
 #include "../vm/Print.h"
-#include "../vm/Universe.h"
 #include "ObjectFormats.h"
 #include "VMArray.h"
 #include "VMInvokable.h"
@@ -109,11 +108,6 @@ PrimInstallResult VMClass::InstallPrimitive(VMInvokable* invokable,
                     hashMismatch = true;
                 } else {
                     seenHash = method->GetBytecodeHash();
-                    if (printCoreLibMethodHashes) {
-                        cout << "Method: "
-                             << method->GetSignature()->AsDebugString()
-                             << " has hash: " << seenHash << '\n';
-                    }
                     if (seenHash == bytecodeHash) {
                         result = PrimInstallResult::INSTALLED_REPLACED;
                     } else {
