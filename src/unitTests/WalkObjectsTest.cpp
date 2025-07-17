@@ -135,7 +135,7 @@ void WalkObjectsTest::testWalkClass() {
 void WalkObjectsTest::testWalkPrimitive() {
     walkedObjects.clear();
     VMSymbol* primitiveSymbol = NewSymbol("myPrimitive");
-    VMPrimitive* prim = VMPrimitive::GetEmptyPrimitive(primitiveSymbol, false);
+    VMInvokable* prim = VMPrimitive::GetEmptyPrimitive(primitiveSymbol, false);
     prim->SetHolder(load_ptr(methodClass));
 
     prim->WalkObjects(collectMembers);

@@ -29,6 +29,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <iostream>
 #include <string>
 
 #include "../memory/Heap.h"
@@ -40,6 +41,7 @@
 #include "ObjectFormats.h"
 #include "VMArray.h"
 #include "VMInvokable.h"
+#include "VMMethod.h"
 #include "VMObject.h"
 #include "VMSymbol.h"
 
@@ -63,36 +65,79 @@ VMClass::VMClass(size_t numberOfFields, size_t additionalBytes)
     : VMObject(numberOfFields + VMClassNumberOfFields,
                additionalBytes + sizeof(VMClass)) {}
 
-bool VMClass::AddInstanceInvokable(VMInvokable* invokable) {
+PrimInstallResult VMClass::InstallPrimitive(VMInvokable* invokable,
+                                            size_t bytecodeHash,
+                                            bool reportHashMismatch) {
     if (invokable == nullptr) {
         ErrorExit("Error: trying to add non-invokable to invokables array");
-        return false;
+        return PrimInstallResult::NULL_ARG;
     }
+
     // Check whether an invokable with the same signature exists and replace it
     // if that's the case
     VMArray* instInvokables = load_ptr(instanceInvokables);
     size_t const numIndexableFields =
         instInvokables->GetNumberOfIndexableFields();
+
     for (size_t i = 0; i < numIndexableFields; ++i) {
         auto* inv =
             static_cast<VMInvokable*>(instInvokables->GetIndexableField(i));
-        if (inv != nullptr) {
-            if (invokable->GetSignature() == inv->GetSignature()) {
-                SetInstanceInvokable(i, invokable);
-                return false;
-            }
-        } else {
+
+        if (inv == nullptr) {
             ErrorExit(
                 "Invokables array corrupted. "
                 "Either NULL pointer added or pointer to non-invokable.");
-            return false;
+            return PrimInstallResult::NULL_IN_INVOKABLES;
+        }
+
+        if (invokable->GetSignature() == inv->GetSignature()) {
+            PrimInstallResult result = PrimInstallResult::NULL_ARG;
+            bool hashMismatch = false;
+            size_t seenHash = 0;
+
+            if (bytecodeHash != 0) {
+                auto* method = dynamic_cast<VMMethod*>(inv);
+                if (method == nullptr) {
+                    assert(inv->GetHolder() != nullptr);
+                    ErrorPrint(
+                        "Expected a bytecode method, but found something else "
+                        "for " +
+                        inv->GetHolder()->GetName()->GetStdString() + ">>#" +
+                        inv->GetSignature()->GetStdString());
+                    result = PrimInstallResult::HASH_MISMATCH;
+                    hashMismatch = true;
+                } else {
+                    seenHash = method->GetBytecodeHash();
+                    if (seenHash == bytecodeHash) {
+                        result = PrimInstallResult::INSTALLED_REPLACED;
+                    } else {
+                        result = PrimInstallResult::HASH_MISMATCH;
+                        hashMismatch = true;
+                    }
+                }
+            } else {
+                result = PrimInstallResult::INSTALLED_REPLACED;
+            }
+
+            if (!hashMismatch) {
+                SetInstanceInvokable(i, invokable);
+            } else if (reportHashMismatch) {
+                cout << "Warn: Primitive "
+                     << inv->GetHolder()->GetName()->GetStdString() << ">>#"
+                     << invokable->GetSignature()->GetStdString()
+                     << " was not installed.\n"
+                     << "Warn: Bytecode hash did not match.\n"
+                     << "Warn: expected hash: " << bytecodeHash << "\n"
+                     << "Warn: actual hash:   " << seenHash << "\n";
+            }
+            return result;
         }
     }
     // it's a new invokable so we need to expand the invokables array.
     store_ptr(instanceInvokables,
               instInvokables->CopyAndExtendWith((vm_oop_t)invokable));
 
-    return true;
+    return PrimInstallResult::INSTALLED_ADDED;
 }
 
 VMSymbol* VMClass::GetInstanceFieldName(size_t index) const {
@@ -193,12 +238,13 @@ bool VMClass::HasPrimitives() const {
     return false;
 }
 
-void VMClass::LoadPrimitives() {
+void VMClass::LoadPrimitives(bool showWarning) {
     std::string const cname = load_ptr(name)->GetStdString();
 
     if (hasPrimitivesFor(cname)) {
-        PrimitiveLoader::InstallPrimitives(cname, this, false);
-        PrimitiveLoader::InstallPrimitives(cname, GetClass(), true);
+        PrimitiveLoader::InstallPrimitives(cname, this, false, showWarning);
+        PrimitiveLoader::InstallPrimitives(
+            cname, GetClass(), true, showWarning);
     }
 }
 

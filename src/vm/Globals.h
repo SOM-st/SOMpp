@@ -13,6 +13,7 @@ extern GCClass* metaClassClass;
 extern GCClass* nilClass;
 extern GCClass* integerClass;
 extern GCClass* arrayClass;
+extern GCClass* vectorClass;
 extern GCClass* methodClass;
 extern GCClass* symbolClass;
 extern GCClass* primitiveClass;
