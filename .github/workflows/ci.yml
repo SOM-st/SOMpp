@@ -83,6 +83,7 @@ jobs:
           export VM=./cmake-build/SOM++
           export CLASSPATH=Smalltalk
           export TEST_EXCEPTIONS=./integration-tests.yml
+          export AWFY=./core-lib/Examples/AreWeFastYet/Core
           pytest core-lib/IntegrationTests
 
       - name: Clang Tidy
