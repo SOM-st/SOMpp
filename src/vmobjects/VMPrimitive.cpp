@@ -40,7 +40,7 @@
 #include "VMMethod.h"
 #include "VMSymbol.h"
 
-VMPrimitive* VMPrimitive::GetFramePrim(VMSymbol* sig, FramePrim prim) {
+VMInvokable* VMPrimitive::GetFramePrim(VMSymbol* sig, FramePrim prim) {
     auto* p = new (GetHeap<HEAP_CLS>(), 0) VMPrimitive(sig, prim);
     return p;
 }
@@ -56,8 +56,8 @@ static void emptyRoutine(VMFrame* frame) {
     ErrorExit("undefined primitive called");
 }
 
-VMPrimitive* VMPrimitive::GetEmptyPrimitive(VMSymbol* sig, bool classSide) {
-    return GetFramePrim(sig, FramePrim(&emptyRoutine, classSide));
+VMInvokable* VMPrimitive::GetEmptyPrimitive(VMSymbol* sig, bool classSide) {
+    return GetFramePrim(sig, FramePrim(&emptyRoutine, classSide, 0));
 }
 
 bool VMPrimitive::IsEmpty() const {

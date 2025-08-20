@@ -22,9 +22,11 @@
 #include "../vmobjects/VMString.h"
 #include "../vmobjects/VMSymbol.h"
 #include "../vmobjects/VMTrivialMethod.h"
+#include "../vmobjects/VMVector.h"
 #include "Globals.h"
 
 static void* vt_array;
+static void* vt_vector;
 static void* vt_block;
 static void* vt_class;
 static void* vt_double;
@@ -76,7 +78,8 @@ bool IsValidObject(vm_oop_t obj) {
              vt == vt_safe_un_primitive || vt == vt_safe_bin_primitive ||
              vt == vt_safe_ter_primitive || vt == vt_string ||
              vt == vt_symbol || vt == vt_literal_return ||
-             vt == vt_global_return || vt == vt_getter || vt == vt_setter;
+             vt == vt_global_return || vt == vt_getter || vt == vt_setter ||
+             vt == vt_vector;
     if (!b) {
         assert(b && "Expected vtable to be one of the known ones.");
         return false;
@@ -103,6 +106,7 @@ bool IsValidObject(vm_oop_t obj) {
 
 void set_vt_to_null() {
     vt_array = nullptr;
+    vt_vector = nullptr;
     vt_block = nullptr;
     vt_class = nullptr;
     vt_double = nullptr;
@@ -183,6 +187,10 @@ void obtain_vtables_of_known_classes(VMSymbol* someValidSymbol) {
     // enough.
     auto* arr = new (GetHeap<HEAP_CLS>(), 0) VMArray(0, 0);
     vt_array = get_vtable(arr);
+
+    auto* vec =
+        new (GetHeap<HEAP_CLS>(), 0) VMVector(nullptr, nullptr, nullptr);
+    vt_vector = get_vtable(vec);
 
     auto* blck = new (GetHeap<HEAP_CLS>(), 0) VMBlock(nullptr, nullptr);
     vt_block = get_vtable(blck);

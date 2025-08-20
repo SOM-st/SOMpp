@@ -59,6 +59,13 @@ void VMObject::nilInitializeFields() {
     }
 }
 
+/* Allows only a certain subset of fields to be made nil */
+void VMObject::nilInitializeFieldsFrom(size_t nillableFrom) {
+    for (size_t i = nillableFrom; i < numberOfFields; ++i) {
+        FIELDS[i] = nilObject;
+    }
+}
+
 void VMObject::SetClass(VMClass* cl) {
     store_ptr(clazz, cl);
 }

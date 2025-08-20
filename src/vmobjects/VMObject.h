@@ -77,6 +77,22 @@ public:
         nilInitializeFields();
     }
 
+    /* Constructor to be used when making fields nil is only required from a
+     * certain index onwards */
+    explicit VMObject(size_t numSubclassFields, size_t totalObjectSize,
+                      size_t nillableFrom)
+        : totalObjectSize(totalObjectSize),
+          numberOfFields(VMObjectNumberOfFields + numSubclassFields) {
+        assert(IS_PADDED_SIZE(totalObjectSize));
+        assert(totalObjectSize >= sizeof(VMObject));
+
+        // this line would be needed if the VMObject** is used instead of the
+        // macro: FIELDS = (VMObject**)&clazz;
+        hash = (intptr_t)this;
+
+        nilInitializeFieldsFrom(nillableFrom);
+    }
+
     ~VMObject() override = default;
 
     [[nodiscard]] int64_t GetHash() const override { return hash; }
@@ -121,6 +137,7 @@ public:
 
 protected:
     void nilInitializeFields();
+    void nilInitializeFieldsFrom(size_t nillableFrom);
 
     // VMObject essentials
     int64_t hash;

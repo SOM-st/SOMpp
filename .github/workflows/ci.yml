@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test_soms:
+    name: Run (Compiler=${{matrix.compiler}} GC=${{matrix.gc}} ${{matrix.cmake_flags}}
     runs-on: ubuntu-24.04
     # continue-on-error: true
     strategy:
@@ -11,10 +12,10 @@ jobs:
       matrix:
         compiler: [clang, gcc]
         gc: [GENERATIONAL, MARK_SWEEP, COPYING]
-        integers:
+        cmake_flags:
           - "-DUSE_TAGGING=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"
-          - "-DUSE_TAGGING=false -DCACHE_INTEGER=false"
+          - "-DUSE_TAGGING=false -DCACHE_INTEGER=false -DUSE_VECTOR_PRIMITIVES=false"
 
     steps:
       - name: Checkout SOM Repository
@@ -52,16 +53,17 @@ jobs:
             export CXX=g++
           fi
           echo $CC $CXX
-          echo cmake . -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }}
+          echo cmake . -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }}
           mkdir cmake-build
           cd cmake-build
-          cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }} -DCMAKE_BUILD_TYPE=Debug
+          cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }} -DCMAKE_BUILD_TYPE=Debug
           make -j5
 
       - name: Run Unit Tests
         run: |
           cd cmake-build
           ./unittests -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
+          ./SOM++ -prim-hash-check -cp ../Smalltalk ../Examples/Benchmarks/BenchmarkHarness.som VectorBenchmark 1 1
 
       - name: Run Tests on SOM VM
         run: |
@@ -81,7 +83,7 @@ jobs:
       - name: Clang Tidy
         if: matrix.compiler == 'clang'
         run: |
-          clang-tidy-20 --config-file=.clang-tidy src/**/*.cpp -- -fdiagnostics-absolute-paths -DGC_TYPE=${{ matrix.gc}} ${{ matrix.integers }} -DUNITTESTS
+          clang-tidy-20 --config-file=.clang-tidy src/*.cpp src/**/*.cpp -- -fdiagnostics-absolute-paths -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }} -DUNITTESTS
 
       - name: Clang Format
         if: matrix.compiler == 'clang' && matrix.gc == 'GENERATIONAL'

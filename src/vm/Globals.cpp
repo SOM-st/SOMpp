@@ -13,6 +13,7 @@ GCClass* metaClassClass;
 GCClass* nilClass;
 GCClass* integerClass;
 GCClass* arrayClass;
+GCClass* vectorClass;
 GCClass* methodClass;
 GCClass* symbolClass;
 GCClass* primitiveClass;

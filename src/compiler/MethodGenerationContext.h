@@ -49,7 +49,7 @@ public:
     ~MethodGenerationContext();
 
     VMInvokable* Assemble();
-    VMPrimitive* AssemblePrimitive(bool classSide);
+    VMInvokable* AssemblePrimitive(bool classSide);
 
     int8_t FindLiteralIndex(vm_oop_t lit);
     bool FindVar(std::string& var, int64_t* index, int* context,
