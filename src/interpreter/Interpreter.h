@@ -33,11 +33,35 @@
 #include "../vmobjects/VMFrame.h"
 #include "../vmobjects/VMMethod.h"
 
+#ifdef USE_YK
+#include "../vm/Yk.h"
+#endif
+
+// Yk requires exactly one call site for yk_mt_control_point in the binary.
+// DISPATCH_NOGC/GC therefore jump to a trampoline label (YK_DISPATCH_START)
+// where the single control point call lives.  The trampoline is defined in
+// Interpreter::Start() using the YK_DISPATCH_TRAMPOLINE macro below.
+#ifdef USE_YK
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+#define DISPATCH_NOGC() goto YK_DISPATCH_START
+#define DISPATCH_GC()                                       \
+    {                                                       \
+        if (GetHeap<HEAP_CLS>()->isCollectionTriggered()) { \
+            startGC();                                      \
+        }                                                   \
+        goto YK_DISPATCH_START;                             \
+    }
+#define YK_DISPATCH_TRAMPOLINE()                                            \
+    YK_DISPATCH_START:                                                      \
+        yk_mt_control_point(global_yk_mt,                                   \
+            &static_cast<YkLocation*>(method->yklocs)[bytecodeIndexGlobal]);\
+        goto* loopTargets[currentBytecodes[bytecodeIndexGlobal]]
+// NOLINTEND(cppcoreguidelines-macro-usage)
+#else
 #define DISPATCH_NOGC()                                           \
     {                                                             \
         goto* loopTargets[currentBytecodes[bytecodeIndexGlobal]]; \
     }
-
 #define DISPATCH_GC()                                             \
     {                                                             \
         if (GetHeap<HEAP_CLS>()->isCollectionTriggered()) {       \
@@ -45,11 +69,12 @@
         }                                                         \
         goto* loopTargets[currentBytecodes[bytecodeIndexGlobal]]; \
     }
+#define YK_DISPATCH_TRAMPOLINE() (void)0
+#endif
 
 class Interpreter {
 public:
-    template <bool PrintBytecodes>
-    static vm_oop_t Start();
+    static vm_oop_t Start(bool printBytecodes = false);
 
     static VMFrame* PushNewFrame(VMMethod* method);
     static void SetFrame(VMFrame* frm);
@@ -81,9 +106,9 @@ private:
     static size_t bytecodeIndexGlobal;
     static uint8_t* currentBytecodes;
 
-    static const std::string unknownGlobal;
-    static const std::string doesNotUnderstand;
-    static const std::string escapedBlock;
+    static constexpr const char* unknownGlobal = "unknownGlobal:";
+    static constexpr const char* doesNotUnderstand = "doesNotUnderstand:arguments:";
+    static constexpr const char* escapedBlock = "escapedBlock:";
 
     static void startGC();
     static void disassembleMethod();

@@ -37,6 +37,11 @@
 #include "../vmobjects/ObjectFormats.h"
 #include "Print.h"
 
+#ifdef USE_YK
+#include "Yk.h"
+extern YkMT* global_yk_mt;
+#endif
+
 class SourcecodeCompiler;
 
 // for runtime debug

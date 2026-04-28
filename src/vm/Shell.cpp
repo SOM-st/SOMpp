@@ -128,11 +128,7 @@ void Shell::Start() {
 
         // Start the Interpreter
 
-        if (dumpBytecodes > 1) {
-            Interpreter::Start<true>();
-        } else {
-            Interpreter::Start<false>();
-        }
+        Interpreter::Start(dumpBytecodes > 1);
 
         // Save the result of the run method
         it = currentFrame->Pop();

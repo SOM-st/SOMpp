@@ -96,7 +96,7 @@ public:
              size_t numLocals, size_t maxStackDepth, LexicalScope* lexicalScope,
              BackJump* inlinedLoops);
 
-    ~VMMethod() override { delete lexicalScope; }
+    ~VMMethod() override;
 
     [[nodiscard]] inline size_t GetNumberOfLocals() const {
         return numberOfLocals;
@@ -220,4 +220,7 @@ private:
 #endif
     gc_oop_t* indexableFields;
     uint8_t* bytecodes;
+#ifdef USE_YK
+    void* yklocs{nullptr};  // YkLocation[], one per bytecode
+#endif
 };

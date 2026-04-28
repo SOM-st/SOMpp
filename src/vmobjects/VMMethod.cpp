@@ -26,6 +26,10 @@
 
 #include "VMMethod.h"
 
+#ifdef USE_YK
+#include "../vm/Yk.h"
+#endif
+
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -67,13 +71,38 @@ VMMethod::VMMethod(VMSymbol* signature, size_t bcCount,
     cachedFrame = nullptr;
 #endif
 
-    indexableFields = (gc_oop_t*)(&indexableFields + 2);
+    indexableFields = reinterpret_cast<gc_oop_t*>(this + 1);
     for (size_t i = 0; i < numberOfConstants; ++i) {
         indexableFields[i] = nilObject;
     }
-    bytecodes = (uint8_t*)(&indexableFields + 2 + GetNumberOfIndexableFields());
+    bytecodes = reinterpret_cast<uint8_t*>(indexableFields + numberOfConstants);
+
+#ifdef USE_YK
+    if (bcCount > 0) {
+        yklocs = malloc(bcCount * sizeof(YkLocation));
+        if (yklocs != nullptr) {
+            for (size_t i = 0; i < bcCount; i++) {
+                static_cast<YkLocation*>(yklocs)[i] = yk_location_new();
+            }
+        }
+    }
+#endif
 
     write_barrier(this, signature);
+}
+
+VMMethod::~VMMethod() {
+    delete lexicalScope;
+#ifdef USE_YK
+    if (yklocs != nullptr) {
+        for (size_t i = 0; i < bcLength; i++) {
+            if (!yk_location_is_null(static_cast<YkLocation*>(yklocs)[i])) {
+                yk_location_drop(static_cast<YkLocation*>(yklocs)[i]);
+            }
+        }
+        free(yklocs);
+    }
+#endif
 }
 
 VMMethod* VMMethod::CloneForMovingGC() const {
@@ -83,11 +112,10 @@ VMMethod* VMMethod::CloneForMovingGC() const {
     memcpy(SHIFTED_PTR(clone, sizeof(VMObject)),
            SHIFTED_PTR(this, sizeof(VMObject)),
            GetObjectSize() - sizeof(VMObject));
-    clone->indexableFields = (gc_oop_t*)(&(clone->indexableFields) + 2);
-
     size_t const numIndexableFields = GetNumberOfIndexableFields();
+    clone->indexableFields = reinterpret_cast<gc_oop_t*>(clone + 1);
     clone->bytecodes =
-        (uint8_t*)(&(clone->indexableFields) + 2 + numIndexableFields);
+        reinterpret_cast<uint8_t*>(clone->indexableFields + numIndexableFields);
 
     // Use of GetNumberOfIndexableFields() is problematic here, because it may
     // be invalid object while cloning/moving within GC

@@ -127,9 +127,48 @@ target_include_directories(SOM++ PRIVATE ${SRC_DIR})
 
 target_link_libraries(SOM++)
 
+set(YK_BUILD_TYPE "" CACHE STRING "Yk build type (debug or release). Enables Yk JIT when set.")
+
+if(NOT "${YK_BUILD_TYPE}" STREQUAL "")
+  execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cppflags
+    OUTPUT_VARIABLE YK_CPPFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+  string(REGEX REPLACE " *-DUSE_YK" "" YK_CPPFLAGS "${YK_CPPFLAGS}")
+
+  execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cflags
+    OUTPUT_VARIABLE YK_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+  # Strip -flto from yk-config cflags: LTO+O3 crashes YkIRWriter (BBCache lookup
+  # fails on PHI nodes created by cross-module inlining). Use O2 without LTO.
+  string(REGEX REPLACE " *-flto" "" YK_CFLAGS "${YK_CFLAGS}")
+
+  execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --ldflags
+    OUTPUT_VARIABLE YK_LDFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+
+  execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --libs
+    OUTPUT_VARIABLE YK_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+
+  separate_arguments(YK_CPPFLAGS_LIST UNIX_COMMAND "${YK_CPPFLAGS}")
+  separate_arguments(YK_CFLAGS_LIST UNIX_COMMAND "${YK_CFLAGS}")
+  separate_arguments(YK_LDFLAGS_LIST UNIX_COMMAND "${YK_LDFLAGS}")
+  separate_arguments(YK_LIBS_LIST UNIX_COMMAND "${YK_LIBS}")
+
+  target_compile_definitions(SOM++ PRIVATE USE_YK)
+  target_compile_options(SOM++ PRIVATE ${YK_CPPFLAGS_LIST} ${YK_CFLAGS_LIST} -fno-exceptions)
+  target_link_options(SOM++ PRIVATE ${YK_LDFLAGS_LIST})
+  target_link_libraries(SOM++ ${YK_LIBS_LIST})
+
+  message(STATUS "Yk JIT enabled (${YK_BUILD_TYPE})")
+  message(STATUS "  Ensure CMAKE_CXX_COMPILER is set to: yk-config ${YK_BUILD_TYPE} --cc")
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  target_compile_options(SOM++ PRIVATE -O3 -flto)
-  target_link_options(SOM++ PRIVATE -flto)
+  if("${YK_BUILD_TYPE}" STREQUAL "")
+    target_compile_options(SOM++ PRIVATE -O3 -flto)
+    target_link_options(SOM++ PRIVATE -flto)
+  else()
+    # LTO with O3 crashes YkIRWriter (PHI incoming blocks outside BBCache after
+    # cross-module inlining). Use O2 without LTO for Yk release builds.
+    target_compile_options(SOM++ PRIVATE -O2)
+  endif()
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

@@ -26,6 +26,10 @@
 
 #include "Universe.h"
 
+#ifdef USE_YK
+YkMT* global_yk_mt = nullptr;
+#endif
+
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -110,6 +114,13 @@ void Universe::Shutdown() {
          it != integerHist.end();
          it++) {
         hist_csv << it->first << ", " << it->second << endl;
+    }
+#endif
+
+#ifdef USE_YK
+    if (global_yk_mt != nullptr) {
+        yk_mt_shutdown(global_yk_mt);
+        global_yk_mt = nullptr;
     }
 #endif
 
@@ -353,14 +364,23 @@ vm_oop_t Universe::interpretMethod(VMObject* receiver, VMInvokable* initialize,
         dumpBytecodes = 2 - trace;
     }
 
-    if (dumpBytecodes > 1) {
-        return Interpreter::Start<true>();
-    }
-    return Interpreter::Start<false>();
+    return Interpreter::Start(dumpBytecodes > 1);
 }
 
 void Universe::initialize(int32_t _argc, char** _argv) {
     InitializeAllocationLog();
+
+#ifdef USE_YK
+    {
+        char* yk_err = nullptr;
+        global_yk_mt = yk_mt_new(&yk_err);
+        if (yk_err != nullptr) {
+            fprintf(stderr, "[YK] init failed: %s\n", yk_err);
+            free(yk_err);
+            global_yk_mt = nullptr;
+        }
+    }
+#endif
 
     heapSize = 1ULL * 1024 * 1024;
 
