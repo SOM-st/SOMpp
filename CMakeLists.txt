@@ -125,21 +125,14 @@ target_compile_options(SOM++ PRIVATE
 
 target_include_directories(SOM++ PRIVATE ${SRC_DIR})
 
-target_link_libraries(SOM++)
-
 set(YK_BUILD_TYPE "" CACHE STRING "Yk build type (debug or release). Enables Yk JIT when set.")
 
 if(NOT "${YK_BUILD_TYPE}" STREQUAL "")
   execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cppflags
     OUTPUT_VARIABLE YK_CPPFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
-  string(REGEX REPLACE " *-DUSE_YK" "" YK_CPPFLAGS "${YK_CPPFLAGS}")
 
   execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cflags
     OUTPUT_VARIABLE YK_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
-  # Keep -flto: Yk IR passes (--yk-embed-ir, --yk-patch-control-point, etc.)
-  # need LLVM bitcode at link time. Cap LTO at O0 via --lto-O0 to avoid the
-  # YkIRWriter BBCache crash caused by O3 cross-module inlining creating PHI
-  # nodes whose incoming blocks fall outside BBCache.
 
   execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --ldflags
     OUTPUT_VARIABLE YK_LDFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
@@ -154,7 +147,7 @@ if(NOT "${YK_BUILD_TYPE}" STREQUAL "")
 
   target_compile_definitions(SOM++ PRIVATE USE_YK)
   target_compile_options(SOM++ PRIVATE ${YK_CPPFLAGS_LIST} ${YK_CFLAGS_LIST} -fno-exceptions -fno-jump-tables)
-  target_link_options(SOM++ PRIVATE ${YK_LDFLAGS_LIST} -Wl,--lto-O0)
+  target_link_options(SOM++ PRIVATE ${YK_LDFLAGS_LIST})
   target_link_libraries(SOM++ ${YK_LIBS_LIST})
 
   message(STATUS "Yk JIT enabled (${YK_BUILD_TYPE})")
@@ -162,12 +155,8 @@ if(NOT "${YK_BUILD_TYPE}" STREQUAL "")
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  if("${YK_BUILD_TYPE}" STREQUAL "")
-    target_compile_options(SOM++ PRIVATE -O3 -flto)
-    target_link_options(SOM++ PRIVATE -flto)
-  else()
-    target_compile_options(SOM++ PRIVATE -O2)
-  endif()
+  target_compile_options(SOM++ PRIVATE -O3 -flto)
+  target_link_options(SOM++ PRIVATE -flto)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

@@ -28,21 +28,22 @@ the Yk-modified clang as the C++ compiler and pass all flags through CMake:
 execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cc OUTPUT_VARIABLE YK_CC ...)
 set(CMAKE_CXX_COMPILER "${YK_CC}++")
 
-execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cflags  OUTPUT_VARIABLE YK_CFLAGS ...)
-execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --ldflags OUTPUT_VARIABLE YK_LDFLAGS ...)
-execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --libs    OUTPUT_VARIABLE YK_LIBS ...)
+execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cppflags OUTPUT_VARIABLE YK_CPPFLAGS ...)
+execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cflags   OUTPUT_VARIABLE YK_CFLAGS ...)
+execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --ldflags  OUTPUT_VARIABLE YK_LDFLAGS ...)
+execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --libs     OUTPUT_VARIABLE YK_LIBS ...)
 
-target_compile_options(SOM++ PRIVATE ${YK_CFLAGS_LIST} -fno-exceptions -fno-jump-tables)
-target_link_options(SOM++ PRIVATE ${YK_LDFLAGS_LIST} -Wl,--lto-O0)
+target_compile_definitions(SOM++ PRIVATE USE_YK)
+target_compile_options(SOM++ PRIVATE ${YK_CPPFLAGS_LIST} ${YK_CFLAGS_LIST} -fno-exceptions -fno-jump-tables)
+target_link_options(SOM++ PRIVATE ${YK_LDFLAGS_LIST})
 target_link_libraries(SOM++ ${YK_LIBS_LIST})
 ```
 
-`yk-config --cflags` injects `-flto`.  Do **not** strip it — the Yk linker passes
-(`--yk-embed-ir`, `--yk-patch-control-point`, etc.) operate on LLVM bitcode produced
-by LTO; without it they silently no-op and tracing never fires.
-
-Add `-Wl,--lto-O0` to cap LTO optimisation.  The default LTO level (`-O3`) triggers
-a `YkIRWriter` crash via cross-module inlining; `--lto-O0` disables that inlining.
+`--cppflags` provides the ykcapi include path.  `--cflags` injects `-flto` — do
+**not** strip it: the Yk linker passes (`--yk-embed-ir`, `--yk-patch-control-point`,
+etc.) operate on LLVM bitcode produced by LTO; without it they silently no-op and
+tracing never fires.  `USE_YK` is added via `target_compile_definitions` rather than
+taken from `--cppflags` so it is scoped to the target.
 
 Add `-fno-jump-tables` so the compiler does not lower `switch` statements into
 indirect-jump tables (which produce untraceable `indirectbr` IR — see §4).
@@ -220,7 +221,7 @@ pub(crate) fn eval(&mut self, idx: usize, gvar_ptrs: *const *const c_void) {
 
 ### 7  1-bit stores in the x64 JIT backend (ykrt change)
 
-LTO at `-O0` keeps `bool` temporaries as `i1` alloca slots with explicit stores.
+LTO keeps `bool` temporaries as `i1` alloca slots with explicit stores.
 The x64 backend has no 1-bit move instruction; widen `i1` to `i8` (a `bool`'s
 backing allocation is always at least 1 byte):
 
