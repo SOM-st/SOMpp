@@ -62,5 +62,5 @@ private:
 
     std::map<std::string, PrimitiveContainer*> primitiveObjects;
 
-    static PrimitiveLoader loader;
+    static PrimitiveLoader& GetLoader();
 };

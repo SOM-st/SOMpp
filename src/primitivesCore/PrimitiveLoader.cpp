@@ -43,7 +43,13 @@
 #include "../vmobjects/ObjectFormats.h"
 #include "PrimitiveContainer.h"
 
-PrimitiveLoader PrimitiveLoader::loader;
+// Lazy singleton: defer construction until first use so global ctors (which
+// run before main()) never call shadow-stack-instrumented code before the
+// shadow stack is initialized by main().
+PrimitiveLoader& PrimitiveLoader::GetLoader() {
+    static PrimitiveLoader instance;
+    return instance;
+}
 
 PrimitiveLoader::PrimitiveLoader() {
     AddPrimitiveObject("Array", new _Array());
@@ -75,13 +81,13 @@ bool PrimitiveLoader::supportsClass(const std::string& name) {
 }
 
 bool PrimitiveLoader::SupportsClass(const std::string& name) {
-    return loader.supportsClass(name);
+    return GetLoader().supportsClass(name);
 }
 
 void PrimitiveLoader::InstallPrimitives(const std::string& cname,
                                         VMClass* clazz,
                                         bool classSide) {
-    loader.installPrimitives(cname, clazz, classSide);
+    GetLoader().installPrimitives(cname, clazz, classSide);
 }
 
 void PrimitiveLoader::installPrimitives(const std::string& cname,

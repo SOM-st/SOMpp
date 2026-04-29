@@ -46,6 +46,36 @@ A simple Hello World program is executed with:
 ./SOM++ -cp ../Smalltalk ../Examples/Hello.som
 ```
 
+Yk JIT
+------
+
+SOM++ can be built with the [Yk](https://github.com/ykjit/yk) meta-tracing JIT.
+Yk requires its own modified clang toolchain, supplied via `yk-config`.
+The `yk_config` path at the top of `justfile` must point to it.
+
+```bash
+just build-yk      # Yk debug build  → cmake-yk/SOM++
+just build-yk-release  # Yk release build
+just hello-yk      # run Hello.som under the JIT
+just test-yk       # run full SOM test suite under the JIT
+just awfy          # run Are-We-Fast-Yet benchmarks (plain)
+just awfy-compare  # run AWFY benchmarks, plain vs Yk side-by-side
+```
+
+To inspect JIT activity, set environment variables before running:
+
+```bash
+# lower the hot-loop threshold so tracing fires quickly:
+YK_HOT_THRESHOLD=5 cmake-yk/SOM++ -cp Smalltalk Examples/VeryHeavyLoop.som
+
+# write tracing statistics to a JSON file:
+YKD_LOG_STATS=ykstats.json cmake-yk/SOM++ -cp Smalltalk Examples/VeryHeavyLoop.som
+cat ykstats.json
+# traces_compiled_ok > 0 and trace_executions > 0 confirm the JIT is working.
+```
+
+See `YK_INTEGRATION.md` for a full account of the integration.
+
 Information on previous authors are included in the AUTHORS file. This code is
 distributed under the MIT License. Please see the LICENSE file for details.
 Additional documentation, detailing for instance the object model and how to

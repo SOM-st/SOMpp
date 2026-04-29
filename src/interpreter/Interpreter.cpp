@@ -143,7 +143,11 @@ vm_oop_t Interpreter::Start(bool printBytecodes) {
                            &&LABEL_BC_JUMP2_IF_GREATER,
                            &&LABEL_BC_JUMP2_BACKWARD};
 
+#ifdef USE_YK
+    goto YK_DISPATCH_START;
+#else
     goto* loopTargets[currentBytecodes[bytecodeIndexGlobal]];
+#endif
 
     //
     // THIS IS THE former interpretation loop

@@ -1,9 +1,8 @@
 # Integrating a C/C++ Interpreter with Yk
 
-This document records every issue encountered and how it was fixed when integrating
-SOM++ (a C++ Smalltalk VM) with [Yk](https://github.com/ykjit/yk), a meta-tracing
-JIT for bytecode interpreters.  It is written for the next engineer who wants to
-do the same with a different interpreter.
+This document records what is required to integrate a C/C++ bytecode interpreter
+with [Yk](https://github.com/ykjit/yk), a meta-tracing JIT.  It is written for
+the next engineer who wants to do the same with a different interpreter.
 
 ---
 
@@ -22,50 +21,62 @@ runtime (`libykrt`).  The interpreter must:
 
 ### 1  Build system
 
-Install `yk-config` (provided by yk-csom) and use it to obtain the compiler and
-linker flags:
+`yk-config` (provided by yk-csom) supplies the compiler and linker flags.  Use
+the Yk-modified clang as the C++ compiler and pass all flags through CMake:
 
 ```cmake
-execute_process(COMMAND yk-config debug --cc OUTPUT_VARIABLE YK_CC ...)
+execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cc OUTPUT_VARIABLE YK_CC ...)
 set(CMAKE_CXX_COMPILER "${YK_CC}++")
+
+execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --cflags  OUTPUT_VARIABLE YK_CFLAGS ...)
+execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --ldflags OUTPUT_VARIABLE YK_LDFLAGS ...)
+execute_process(COMMAND yk-config ${YK_BUILD_TYPE} --libs    OUTPUT_VARIABLE YK_LIBS ...)
+
+target_compile_options(SOM++ PRIVATE ${YK_CFLAGS_LIST} -fno-exceptions -fno-jump-tables)
+target_link_options(SOM++ PRIVATE ${YK_LDFLAGS_LIST} -Wl,--lto-O0)
+target_link_libraries(SOM++ ${YK_LIBS_LIST})
 ```
 
-Pass the Yk link flags at link time (they are LTO passes, not compile-time flags):
+`yk-config --cflags` injects `-flto`.  Do **not** strip it — the Yk linker passes
+(`--yk-embed-ir`, `--yk-patch-control-point`, etc.) operate on LLVM bitcode produced
+by LTO; without it they silently no-op and tracing never fires.
 
-```cmake
-execute_process(COMMAND yk-config debug --ldflags OUTPUT_VARIABLE YK_LDFLAGS ...)
-target_link_options(myvm PRIVATE ${YK_LDFLAGS})
-```
+Add `-Wl,--lto-O0` to cap LTO optimisation.  The default LTO level (`-O3`) triggers
+a `YkIRWriter` crash via cross-module inlining; `--lto-O0` disables that inlining.
+
+Add `-fno-jump-tables` so the compiler does not lower `switch` statements into
+indirect-jump tables (which produce untraceable `indirectbr` IR — see §4).
 
 The `-yk-patch-control-point` and `-yk-no-vectorize` warnings emitted by clang
-during *compilation* are harmless — those flags are linker-time flags and are
-ignored at compile time.
+during *compilation* are harmless — those are linker-time flags ignored at compile
+time.
 
 ### 2  Exactly one control point
 
 Yk requires **one** call site for `yk_mt_control_point` in the entire binary.  In a
-dispatch-loop interpreter this usually falls out naturally.  In a computed-goto
-interpreter, every `DISPATCH` macro needs to jump to a single trampoline label
-that contains the one call:
+computed-goto interpreter, every `DISPATCH` macro must jump to a single trampoline
+label that contains the one call.  The trampoline then dispatches to the handler via
+a `switch` (not `goto*` — see §4):
 
 ```cpp
-// In interpreter header
-#define DISPATCH() goto YK_DISPATCH_START
+// In interpreter header (USE_YK build)
+#define DISPATCH_NOGC() goto YK_DISPATCH_START
 
 // In interpreter Start():
 YK_DISPATCH_START:
     yk_mt_control_point(global_yk_mt,
         &static_cast<YkLocation*>(method->yklocs)[bytecodeIndexGlobal]);
-    goto* loopTargets[currentBytecodes[bytecodeIndexGlobal]];
+    switch (currentBytecodes[bytecodeIndexGlobal]) {
+        case BC_PUSH_LOCAL: goto LABEL_BC_PUSH_LOCAL;
+        // ... one case per opcode
+    }
 ```
 
-If the interpreter `Start()` function was templated (e.g.
-`template<bool PrintBytecodes>`), **de-templatize it first**.  Each template
-instantiation is a separate function and therefore produces a separate call site,
-triggering the "Unexpected number of control point calls: 2 expected: 1" panic.
-
-Replace `if constexpr` with ordinary `if`, and change callers from
-`Interpreter::Start<flag>()` to `Interpreter::Start(flag)`.
+If the interpreter `Start()` function is templated (e.g.
+`template<bool PrintBytecodes>`), **de-templatize it first** — each instantiation
+is a separate function with its own call site.  Replace `if constexpr` with
+ordinary `if` and change callers from `Interpreter::Start<flag>()` to
+`Interpreter::Start(flag)`.
 
 ### 3  `YkLocation` array per method
 
@@ -87,19 +98,17 @@ for (size_t i = 0; i < bcLength; i++)
 free(yklocs);
 ```
 
-**Critical layout bug (C++):** If the method object uses an inline-storage trick
-where constants and bytecodes are stored immediately after the struct in the same
-allocation, adding the `yklocs` pointer field shifts the inline data offset.
+**Inline-storage layout (C++):** If the method object stores constants and bytecodes
+immediately after the struct in the same allocation, adding the `yklocs` pointer
+field shifts the inline data offset.  Do not count trailing pointer fields manually:
 
-**Do not** compute the inline-data start by counting trailing pointer fields:
 ```cpp
 // WRONG when yklocs is added as a third trailing pointer:
 indexableFields = (gc_oop_t*)(&indexableFields + 2);
 bytecodes       = (uint8_t*)(&indexableFields  + 2 + nConstants);
 ```
 
-**Use `this + 1` instead**, which always points one struct past the end of the
-current object regardless of how many pointer-sized fields the struct contains:
+Use `this + 1` instead, which is always correct regardless of field count:
 
 ```cpp
 indexableFields = reinterpret_cast<gc_oop_t*>(this + 1);
@@ -109,123 +118,131 @@ bytecodes       = reinterpret_cast<uint8_t*>(indexableFields + numberOfConstants
 Apply the same fix to any `CloneForMovingGC` / copy constructor that rebuilds
 these pointers.
 
-### 4  C++ global constructors and the shadow stack
+### 4  Switch-based dispatch (not computed goto)
 
-Yk's shadow stack pass runs before the `--yk-outline-untraceable` pass.  Functions
-that are called by C++ global constructors (which run **before `main()`**) will be
-instrumented by the shadow stack pass but will execute before `main()` initialises
-the shadow stack global (`shadowstack_0 = malloc(...)`).  The result is a SIGSEGV
-or memory corruption.
+Yk's tracer cannot trace LLVM `indirectbr` instructions.  Computed gotos
+(`goto* table[opcode]`) compile to `indirectbr`, so every trace aborts immediately
+after the control point — all `YKD_LOG_STATS` counters will be zero.
 
-**Fix A — avoid static-storage `std::string` members.**  Every
-`static const std::string` member of a class with static storage duration triggers
-a global constructor that calls into instrumented code.  Replace them with
-`static constexpr const char*`.  This alone eliminates many global constructor
-crashes.
-
-### 5  LTO incompatibility with `yk-config release`
-
-
-`yk-config release --cflags` injects `-flto`, which causes every `.cpp` file to be
-compiled to LLVM bitcode rather than native object files.  The Yk-modified lld then
-runs LTO with `-O3`, applying cross-module inlining before the Yk `YkIRWriter` pass
-serialises the IR.
-
-**The crash:** `std::out_of_range: map::at` in `YkIRWriter::serialiseFunc` at
-`BBCache.at(IB)`.  The root cause is that cross-module inlining can produce PHI
-nodes whose incoming basic blocks come from inlined callee bodies.  Those blocks
-were never registered in `BBCache` (which only tracks blocks following the
-Yk-required `TracingCheck → Record → Serialise` three-block pattern), so the lookup
-throws.
-
-**The fix in `CMakeLists.txt`** (yksompp, no ykllvm changes needed):
-
-```cmake
-# Strip -flto injected by yk-config to avoid the YkIRWriter BBCache crash.
-string(REGEX REPLACE " *-flto" "" YK_CFLAGS "${YK_CFLAGS}")
-```
-
-And for the Release cmake target, skip `-O3 -flto` when a Yk build type is set:
-
-```cmake
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  if("${YK_BUILD_TYPE}" STREQUAL "")
-    target_compile_options(SOM++ PRIVATE -O3 -flto)
-    target_link_options(SOM++ PRIVATE -flto)
-  else()
-    # LTO+O3 crashes YkIRWriter. Use O2 without LTO for Yk release builds.
-    target_compile_options(SOM++ PRIVATE -O2)
-  endif()
-endif()
-```
-
-This produces native `.o` objects that lld links without LTO, avoiding the
-`BBCache` lookup entirely.  The Yk linker passes (`--yk-shadow-stack`,
-`--yk-embed-ir`, etc.) still run at link time through `-mllvm=` flags and are
-unaffected.
-
-**Note:** until the upstream `YkIRWriter` is fixed, a Yk release build uses `-O2`
-rather than `-O3`.  The performance gap is small compared with the JIT speedup once
-traces compile successfully.
-
-### 6  `indirectbr` and computed-goto dispatch
-
-Yk's tracer does not support the LLVM `indirectbr` instruction.  Computed gotos
-(`goto* table[opcode]`) compile to `indirectbr` in LLVM IR, so any interpreter
-dispatch loop that uses them will cause every trace to abort immediately after the
-control point.
-
-**Symptom:** all `YKD_LOG_STATS` counters are zero despite the interpreter running:
-```json
-{ "traces_recorded_ok": 0, "traces_recorded_err": 0, "traces_compiled_ok": 0, ... }
-```
-
-**Root cause:** the control point is reached and tracing begins, but the very next
-instruction is `indirectbr`.  Yk aborts the recording before a single instruction
-is captured, so no trace ever completes.
-
-**Workaround — switch-based dispatch for `USE_YK` builds:**
-
-Replace the computed-goto dispatch with a `switch` statement when `USE_YK` is
-defined:
+Replace the computed-goto dispatch with a `switch` under `#ifdef USE_YK`.  A
+`switch` compiles to `br` with multiple successors, which Yk can trace through:
 
 ```cpp
 #ifdef USE_YK
   switch (currentBytecodes[bytecodeIndexGlobal]) {
-    case BC_PUSH_LOCAL:    goto op_push_local;
-    case BC_PUSH_ARGUMENT: goto op_push_argument;
-    // ...
+    case BC_PUSH_LOCAL:    goto LABEL_BC_PUSH_LOCAL;
+    case BC_PUSH_ARGUMENT: goto LABEL_BC_PUSH_ARGUMENT;
+    // ... one case per opcode
+    default: __builtin_unreachable();
   }
 #else
   goto* loopTargets[currentBytecodes[bytecodeIndexGlobal]];
 #endif
 ```
 
-A `switch` compiles to `br` with multiple successors (not `indirectbr`), which Yk
-can trace through.  This is the recommended approach and avoids any changes to the
-ykllvm fork.
+Also add `-fno-jump-tables` to compile options (§1) so the compiler does not lower
+the `switch` back into an indirect-jump table.
 
-**Alternative:** implement `indirectbr` support in Yk's tracer (upstream work).
+### 5  C++ global constructors and the shadow stack
 
----
+Yk's shadow-stack pass instruments every function.  Functions called from C++ global
+constructors run **before `main()`** initialises the shadow stack, which will
+corrupt memory.
 
-## Diagnostic tips
+**Fix A — eliminate static-storage `std::string` members.**  Replace
+`static const std::string` members of classes with static storage duration with
+`static constexpr const char*` to eliminate the ctor.
 
-- **"Unexpected number of control point calls: N expected: 1"** — you have multiple
-  call sites, most likely from template instantiation.  De-templatize.
-- **SIGSEGV in `__cxx_global_var_init`** — a global constructor calls shadow-stack-
-  instrumented code before `main()` initializes the stack.  Check for
-  `static const std::string` members; replace with `constexpr const char*`.
-- **SIGSEGV in constructor (e.g. `PrimitiveLoader`)** — same root cause as above;
-  eliminate remaining `static const std::string` members.
-- **`std::out_of_range: map::at`** in `YkIRWriter` at link time —
-  LTO cross-module inlining broke the Yk IR structure.
-  Strip `-flto` from `yk-config --cflags` in `CMakeLists.txt` (see §5).
-- **YkLocation state corruption (`state == 2`)** — the `yklocs` pointer field is
-  being overwritten by inline-constant storage.  Apply the `this + 1` fix.
-- **All `YKD_LOG_STATS` counters are zero** — tracing is aborting immediately.
-  Most likely cause: computed-goto dispatch.  Switch to `switch`-based dispatch
-  under `#ifdef USE_YK` (see §6).
+**Fix B — lazy singleton for static instances.**  Convert any class with a static
+global instance whose constructor calls instrumented code to a function-local static,
+so construction is deferred until after `main()` runs:
+
+```cpp
+// Replace: static PrimitiveLoader loader;  (eager global ctor)
+// With a lazy accessor:
+static PrimitiveLoader& GetLoader() {
+    static PrimitiveLoader instance;   // initialized on first call
+    return instance;
+}
+// All static methods: loader.foo(x) → GetLoader().foo(x)
+```
+
+### 6  Private-linkage globals (ykrt change)
+
+`--yk-embed-ir` serialises every LLVM global into the binary.  At runtime,
+`GlobalDecl::eval()` in ykrt resolves each global's address via `dlsym()`.
+Private/local-linkage globals — string literals (`.str.N`), `__PRETTY_FUNCTION__`
+constants — are not in the dynamic symbol table, so `dlsym` returns null.
+
+The linker pass also creates `__yk_globalvar_ptrs`: an array indexed by global
+declaration order containing the runtime address of every global including private
+ones.  Update `eval_globaldecls` to use it as a fallback:
+
+```rust
+// ykrt/src/compile/jitc_yk/aot_ir.rs
+
+pub(crate) fn eval_globaldecls(&mut self) {
+    let cn = CString::new("__yk_globalvar_ptrs").unwrap();
+    let gvar_ptrs = unsafe {
+        libc::dlsym(std::ptr::null_mut(), cn.as_c_str().as_ptr())
+    } as *const *const c_void;
+
+    for (idx, g) in self.global_decls.iter_mut().enumerate() {
+        g.eval(idx, gvar_ptrs);
+    }
+}
+
+pub(crate) fn eval(&mut self, idx: usize, gvar_ptrs: *const *const c_void) {
+    let cn = CString::new(&*self.name).unwrap();
+    let ptr = unsafe {
+        libc::dlsym(std::ptr::null_mut(), cn.as_c_str().as_ptr())
+    } as *const c_void;
+    if !ptr.is_null() {
+        self.eval = Some(ConstVal {
+            tyidx: self.tyidx,
+            bytes: Vec::from((ptr as usize).to_ne_bytes()),
+        });
+        return;
+    }
+    // Fall back to __yk_globalvar_ptrs[idx] for private/local-linkage globals.
+    if !gvar_ptrs.is_null() {
+        let fallback = unsafe { *gvar_ptrs.add(idx) };
+        if !fallback.is_null() {
+            self.eval = Some(ConstVal {
+                tyidx: self.tyidx,
+                bytes: Vec::from((fallback as usize).to_ne_bytes()),
+            });
+        }
+    }
+    // TLS globals remain unevaluated — the JIT handles them separately.
+}
+```
+
+### 7  1-bit stores in the x64 JIT backend (ykrt change)
+
+LTO at `-O0` keeps `bool` temporaries as `i1` alloca slots with explicit stores.
+The x64 backend has no 1-bit move instruction; widen `i1` to `i8` (a `bool`'s
+backing allocation is always at least 1 byte):
+
+```rust
+// ykrt/src/compile/j2/x64/x64hir_to_asm.rs
+// register-value store branch:
+match val_bitw {
+    1 | 8 => IcedInst::with2(Code::Mov_rm8_r8, memop, valr.to_reg8()),
+    16    => IcedInst::with2(Code::Mov_rm16_r16, memop, valr.to_reg16()),
+    32    => IcedInst::with2(Code::Mov_rm32_r32, memop, valr.to_reg32()),
+    64    => IcedInst::with2(Code::Mov_rm64_r64, memop, valr.to_reg64()),
+    x     => todo!("{x}"),
+}
+// immediate-value store branch:
+match val_bitw {
+    1 | 8 => IcedInst::with2(Code::Mov_rm8_imm8, memop, imm),
+    16    => IcedInst::with2(Code::Mov_rm16_imm16, memop, imm),
+    32    => IcedInst::with2(Code::Mov_rm32_imm32, memop, imm),
+    64    => IcedInst::with2(Code::Mov_rm64_imm32, memop, imm),
+    x     => todo!("{x}"),
+}
+```
 
 ---
 
@@ -237,4 +254,10 @@ just test-som
 
 # Yk build should print "Hello, World from SOM":
 just hello-yk
+
+# Verify tracing actually fires (all-zero stats means tracing never ran):
+YK_HOT_THRESHOLD=5 YKD_LOG_STATS=ykstats.json \
+  cmake-yk/SOM++ -cp Smalltalk Examples/VeryHeavyLoop.som
+cat ykstats.json
+# Expected: traces_recorded_ok > 0, traces_compiled_ok > 0, trace_executions > 0.
 ```

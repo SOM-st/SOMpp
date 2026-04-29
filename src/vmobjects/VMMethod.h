@@ -221,6 +221,6 @@ private:
     gc_oop_t* indexableFields;
     uint8_t* bytecodes;
 #ifdef USE_YK
-    void* yklocs{nullptr};  // YkLocation[], one per bytecode
+    void* yklocs{nullptr};  // YkLocation[], one per bytecode; malloc'd (not GC-managed)
 #endif
 };
