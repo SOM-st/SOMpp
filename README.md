@@ -26,6 +26,20 @@ the SOM standard library and a number of examples are included as a git submodul
 Please see the [main project page][SOMst] for links to other VM implementations.
 
 
+Prerequisites
+-------------
+
+The SOM standard library and examples are located in the `core-lib` git submodule.
+Before building, initialize and fetch the submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+
+Building
+--------
+
 SOM++ uses CMake and an optimized release build can be built like this:
 
 ```bash

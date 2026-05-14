@@ -18,9 +18,7 @@ jobs:
 
     steps:
       - name: Checkout SOM Repository
-        uses: actions/checkout@v4
-        with:
-          submodules: true
+        uses: actions/checkout@v6
 
       - name: Install Apt Packages
         run: |
