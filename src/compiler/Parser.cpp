@@ -192,7 +192,7 @@ static Symbol binaryOpSyms[] = {Or,   Comma, Minus, Equal, Not,  And,
                                 Or,   Star,  Div,   Mod,   Plus, Equal,
                                 More, Less,  Comma, At,    Per,  NONE};
 
-static Symbol keywordSelectorSyms[] = {Keyword, KeywordSequence};
+static Symbol keywordSelectorSyms[] = {Keyword, KeywordSequence, NONE};
 
 void Parser::Classdef(ClassGenerationContext& cgenc) {
     cgenc.SetName(SymbolFor(text));
