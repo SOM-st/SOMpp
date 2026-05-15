@@ -92,6 +92,11 @@ bool VMClass::AddInstanceInvokable(VMInvokable* invokable) {
     store_ptr(instanceInvokables,
               instInvokables->CopyAndExtendWith((vm_oop_t)invokable));
 
+    // set holder, since we don't call SetInstanceInvokable, which does it
+    // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
+    if (invokable != reinterpret_cast<VMInvokable*>(load_ptr(nilObject))) {
+        invokable->SetHolder(this);
+    }
     return true;
 }
 

@@ -1,5 +1,6 @@
 #include "Primitive.h"
 
+#include <cassert>
 #include <cstddef>
 
 #include "../vmobjects/ObjectFormats.h"
@@ -9,7 +10,9 @@
 
 static vm_oop_t pHolder(vm_oop_t rcvr) {
     auto* self = static_cast<VMInvokable*>(rcvr);
-    return self->GetHolder();
+    vm_oop_t holder = self->GetHolder();
+    assert(holder != nullptr);
+    return holder;
 }
 
 static vm_oop_t pSignature(vm_oop_t rcvr) {
