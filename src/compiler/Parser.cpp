@@ -959,7 +959,7 @@ __attribute__((noreturn)) void Parser::parseError(const char* msg,
 
 __attribute__((noreturn)) void Parser::ParseError(const char* msg) const {
     std::string msgWithMeta =
-        "%(file)s:%(line)d:%(column)d: error: " + std::string(msg);
+        "%(file)s:%(line)d:%(column)d: error: " + std::string(msg) + "\n";
 
     ReplacePattern(msgWithMeta, "%(file)s", fname);
 

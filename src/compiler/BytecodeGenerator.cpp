@@ -30,6 +30,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <string>
 
 #include "../interpreter/bytecodes.h"
 #include "../vm/Globals.h"
@@ -141,7 +142,15 @@ void EmitPUSHARGUMENT(MethodGenerationContext& mgenc, const Parser& parser,
 void EmitPUSHFIELD(MethodGenerationContext& mgenc, const Parser& parser,
                    VMSymbol* field) {
     const int64_t idx = mgenc.GetFieldIndex(field);
-    if (idx < 0 || idx > std::numeric_limits<uint8_t>::max()) {
+    if (idx < 0) {
+        std::string const msg(
+            "The method tries to access the field " + field->GetStdString() +
+            ", which was not found in the class " +
+            mgenc.GetHolder()->GetName()->GetStdString() + ".");
+        parser.ParseError(msg.c_str());
+    }
+
+    if (idx > std::numeric_limits<uint8_t>::max()) {
         parser.ParseError(
             "The method tries to access a field that cannot be represented in "
             "the SOM++ bytecodes. Make sure this class and its superclasses "
@@ -283,7 +292,15 @@ void EmitPOPARGUMENT(MethodGenerationContext& mgenc, const Parser& parser,
 void EmitPOPFIELD(MethodGenerationContext& mgenc, const Parser& parser,
                   VMSymbol* field) {
     const int64_t idx = mgenc.GetFieldIndex(field);
-    if (idx < 0 || idx > std::numeric_limits<uint8_t>::max()) {
+    if (idx < 0) {
+        std::string const msg(
+            "The method tries to access the field " + field->GetStdString() +
+            ", which was not found in the class " +
+            mgenc.GetHolder()->GetName()->GetStdString() + ".");
+        parser.ParseError(msg.c_str());
+    }
+
+    if (idx > std::numeric_limits<uint8_t>::max()) {
         parser.ParseError(
             "The method tries to access a field that cannot be represented in "
             "the SOM++ bytecodes. Make sure this class and its superclasses "
