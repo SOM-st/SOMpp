@@ -297,7 +297,6 @@ int8_t MethodGenerationContext::FindLiteralIndex(vm_oop_t lit) {
 
 int64_t MethodGenerationContext::GetFieldIndex(VMSymbol* field) {
     int64_t const idx = holderGenc.GetFieldIndex(field);
-    assert(idx >= 0);
     return idx;
 }
 

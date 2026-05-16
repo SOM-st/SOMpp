@@ -192,7 +192,7 @@ static Symbol binaryOpSyms[] = {Or,   Comma, Minus, Equal, Not,  And,
                                 Or,   Star,  Div,   Mod,   Plus, Equal,
                                 More, Less,  Comma, At,    Per,  NONE};
 
-static Symbol keywordSelectorSyms[] = {Keyword, KeywordSequence};
+static Symbol keywordSelectorSyms[] = {Keyword, KeywordSequence, NONE};
 
 void Parser::Classdef(ClassGenerationContext& cgenc) {
     cgenc.SetName(SymbolFor(text));
@@ -959,7 +959,7 @@ __attribute__((noreturn)) void Parser::parseError(const char* msg,
 
 __attribute__((noreturn)) void Parser::ParseError(const char* msg) const {
     std::string msgWithMeta =
-        "%(file)s:%(line)d:%(column)d: error: " + std::string(msg);
+        "%(file)s:%(line)d:%(column)d: error: " + std::string(msg) + "\n";
 
     ReplacePattern(msgWithMeta, "%(file)s", fname);
 

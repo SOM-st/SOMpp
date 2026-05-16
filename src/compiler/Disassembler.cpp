@@ -45,6 +45,7 @@
 #include "../vmobjects/VMInvokable.h"
 #include "../vmobjects/VMMethod.h"
 #include "../vmobjects/VMObject.h"
+#include "../vmobjects/VMPrimitive.h"
 #include "../vmobjects/VMString.h"
 #include "../vmobjects/VMSymbol.h"
 
@@ -81,6 +82,18 @@ void Disassembler::dispatch(vm_oop_t o) {
         } else if (c == load_ptr(symbolClass)) {
             DebugPrint("#%s",
                        static_cast<VMSymbol*>(o)->GetStdString().c_str());
+        } else if (c == load_ptr(methodClass)) {
+            DebugPrint("#%s",
+                       static_cast<VMMethod*>(o)
+                           ->GetSignature()
+                           ->GetStdString()
+                           .c_str());
+        } else if (c == load_ptr(primitiveClass)) {
+            DebugPrint("#%s",
+                       static_cast<VMPrimitive*>(o)
+                           ->GetSignature()
+                           ->GetStdString()
+                           .c_str());
         } else {
             DebugPrint("address: %p", (void*)o);
         }
@@ -452,7 +465,7 @@ void Disassembler::DumpBytecode(VMFrame* frame, VMMethod* method,
         case BC_PUSH_0:
         case BC_PUSH_1:
         case BC_PUSH_NIL: {
-            // no more details to be printed
+            DebugPrint("\n");
             break;
         }
         case BC_HALT: {
@@ -667,6 +680,7 @@ void Disassembler::DumpBytecode(VMFrame* frame, VMMethod* method,
             }
             break;
         }
+        case BC_RETURN_SELF:
         case BC_RETURN_LOCAL:
         case BC_RETURN_NON_LOCAL: {
             DebugPrint(")\n");
