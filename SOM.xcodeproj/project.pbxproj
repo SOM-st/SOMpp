@@ -313,7 +313,6 @@
 		3F5203320FA6624C00E75857 /* Universe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Universe.cpp; sourceTree = "<group>"; };
 		3F5203330FA6624C00E75857 /* Universe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Universe.h; sourceTree = "<group>"; };
 		3F5203350FA6624C00E75857 /* ObjectFormats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjectFormats.h; sourceTree = "<group>"; };
-		3F5203360FA6624C00E75857 /* PrimitiveRoutine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrimitiveRoutine.h; sourceTree = "<group>"; };
 		3F5203370FA6624C00E75857 /* Signature.cpp */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Signature.cpp; sourceTree = "<group>"; tabWidth = 4; };
 		3F5203380FA6624C00E75857 /* Signature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Signature.h; sourceTree = "<group>"; };
 		3F52033B0FA6624C00E75857 /* VMArray.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VMArray.cpp; sourceTree = "<group>"; };
@@ -447,13 +446,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0A1886C71832BBC900A2CBCA /* SOM++ */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "SOM++";
-			sourceTree = "<group>";
-		};
 		0A67EA7A19ACD44000830E3B /* unittests */ = {
 			isa = PBXGroup;
 			children = (
@@ -499,7 +491,6 @@
 				E18AE29C0FB1C45E00EE6540 /* Examples */,
 				E18AE27F0FB1C44700EE6540 /* Smalltalk */,
 				3F5202EF0FA6624C00E75857 /* src */,
-				0A1886C71832BBC900A2CBCA /* SOM++ */,
 				0A1886C61832BBC900A2CBCA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -554,7 +545,6 @@
 				3F5203020FA6624C00E75857 /* bytecodes.h */,
 				3F5203030FA6624C00E75857 /* Interpreter.cpp */,
 				3F5203040FA6624C00E75857 /* Interpreter.h */,
-				0AB80ADA2C39AC27006B6419 /* InterpreterLoop.h */,
 			);
 			path = interpreter;
 			sourceTree = "<group>";
@@ -670,7 +660,6 @@
 				0A1887091832C0E400A2CBCA /* AbstractObject.cpp */,
 				0A18870A1832C0E400A2CBCA /* AbstractObject.h */,
 				3F5203350FA6624C00E75857 /* ObjectFormats.h */,
-				3F5203360FA6624C00E75857 /* PrimitiveRoutine.h */,
 				0A32B7FC199D6143002825DF /* IntegerBox.cpp */,
 				0A32B7FD199D6143002825DF /* IntegerBox.h */,
 				3F5203370FA6624C00E75857 /* Signature.cpp */,

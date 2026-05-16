@@ -80,16 +80,18 @@ bool PrimitiveLoader::SupportsClass(const std::string& name) {
 
 void PrimitiveLoader::InstallPrimitives(const std::string& cname,
                                         VMClass* clazz,
-                                        bool classSide) {
-    loader.installPrimitives(cname, clazz, classSide);
+                                        bool classSide,
+                                        bool showWarning) {
+    loader.installPrimitives(cname, clazz, classSide, showWarning);
 }
 
 void PrimitiveLoader::installPrimitives(const std::string& cname,
                                         VMClass* clazz,
-                                        bool classSide) {
+                                        bool classSide,
+                                        bool showWarning) {
     if (primitiveObjects.find(cname) == primitiveObjects.end()) {
         return;
     }
 
-    primitiveObjects[cname]->InstallPrimitives(clazz, classSide);
+    primitiveObjects[cname]->InstallPrimitives(clazz, classSide, showWarning);
 }

@@ -40,7 +40,7 @@ public:
     PrimitiveContainer() = default;
     virtual ~PrimitiveContainer() = default;
 
-    void InstallPrimitives(VMClass* clazz, bool classSide);
+    void InstallPrimitives(VMClass* clazz, bool classSide, bool showWarning);
 
     void Add(const char* name, FramePrimitiveRoutine /*routine*/,
              bool classSide);
