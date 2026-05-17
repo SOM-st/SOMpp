@@ -124,8 +124,8 @@ vm_oop_t VMVector::RemoveLast() {
         this->Send("error:", args, 1);
         return frame->Pop();
     }
-    return Remove(NEW_INT(last - first));  // Last-First gives the (User) index
-                                           // of the last element in 1-indexing
+
+    return remove(last - first);  // last element, 1-based indexing
 }
 
 vm_oop_t VMVector::RemoveFirst() {
@@ -160,22 +160,17 @@ vm_oop_t VMVector::RemoveObj(vm_oop_t other) {
 
         // Check where integers are tagged or references can be checked
         if (current == other) {
-            Remove(NEW_INT(i - first + 2));  // Convert to 1-indexing
+            (void)remove(i - first + 2);  // uses 1-based indexing
             return load_ptr(trueObject);
         }
     }
     return load_ptr(falseObject);
 }
 
-vm_oop_t VMVector::Remove(vm_oop_t inx) {
+vm_oop_t VMVector::remove(int64_t index) {
     const int64_t first = SMALL_INT_VAL(load_ptr(this->first));
     int64_t last = SMALL_INT_VAL(load_ptr(this->last));
     VMArray* storage = load_ptr(this->storage);
-    int64_t const index = SMALL_INT_VAL(inx);
-
-    if (index < 1 || index > last - first) {
-        return IndexOutOfBounds(first + last - 1, index);
-    }
 
     vm_oop_t itemToRemove = GetStorage(index);
 

@@ -52,7 +52,7 @@ public:
 
     vm_oop_t RemoveObj(vm_oop_t other);
 
-    vm_oop_t Remove(vm_oop_t inx);
+    vm_oop_t remove(int64_t index);
 
     void RemoveAll();
 
