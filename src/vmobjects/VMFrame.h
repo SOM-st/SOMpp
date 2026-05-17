@@ -127,7 +127,7 @@ public:
     }
 
     inline vm_oop_t GetLocal(uint8_t index, uint8_t contextLevel) {
-        VMFrame* context = GetContextLevel(contextLevel);
+        VMFrame const* context = GetContextLevel(contextLevel);
         return load_ptr(context->locals[index]);
     }
 
@@ -143,7 +143,7 @@ public:
 
     inline vm_oop_t GetArgument(uint8_t index, uint8_t contextLevel) {
         // get the context
-        VMFrame* context = GetContextLevel(contextLevel);
+        VMFrame const* context = GetContextLevel(contextLevel);
         return load_ptr(context->arguments[index]);
     }
 
@@ -182,7 +182,7 @@ public:
     size_t totalObjectSize;
 
     void ResetStackPointer() {
-        VMMethod* meth = GetMethod();
+        VMMethod const* meth = GetMethod();
         // Set the stack pointer to its initial value thereby clearing the stack
         stack_ptr = locals + meth->GetNumberOfLocals() - 1;
     }

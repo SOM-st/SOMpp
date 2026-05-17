@@ -54,6 +54,9 @@ public:
                                   bool classSide,
                                   bool showWarning);
 
+    static PrimitiveLoader* GetInstance();
+    PrimitiveContainer* GetObject(const std::string& name);
+
 private:
     void installPrimitives(const std::string& cname,
                            VMClass* clazz,

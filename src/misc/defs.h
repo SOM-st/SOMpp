@@ -127,6 +127,13 @@ typedef DebugCopyingHeap HEAP_CLS;
 #endif
 
 //
+// Vector Settings
+//
+#ifndef USE_VECTOR_PRIMITIVES
+  #define USE_VECTOR_PRIMITIVES true
+#endif
+
+//
 // Debugging
 //
 #ifdef DEBUG
