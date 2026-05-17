@@ -44,22 +44,13 @@ public:
     void InstallPrimitives(VMClass* clazz, bool classSide, bool showWarning);
 
     void Add(const char* name, FramePrimitiveRoutine /*routine*/,
-             bool classSide);
+             bool classSide, size_t hash = 0);
     void Add(const char* name, UnaryPrimitiveRoutine /*routine*/,
-             bool classSide);
+             bool classSide, size_t hash = 0);
     void Add(const char* name, BinaryPrimitiveRoutine /*routine*/,
-             bool classSide);
+             bool classSide, size_t hash = 0);
     void Add(const char* name, TernaryPrimitiveRoutine /*routine*/,
-             bool classSide);
-
-    void Add(const char* name, FramePrimitiveRoutine /*routine*/,
-             bool classSide, size_t hash);
-    void Add(const char* name, UnaryPrimitiveRoutine /*routine*/,
-             bool classSide, size_t hash);
-    void Add(const char* name, BinaryPrimitiveRoutine /*routine*/,
-             bool classSide, size_t hash);
-    void Add(const char* name, TernaryPrimitiveRoutine /*routine*/,
-             bool classSide, size_t hash);
+             bool classSide, size_t hash = 0);
 
     void Add(const char* name, bool classSide,
              FramePrimitiveRoutine /*routine*/, size_t hash1,

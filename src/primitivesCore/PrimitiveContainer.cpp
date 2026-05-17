@@ -43,37 +43,6 @@
 #include "../vmobjects/VMSymbol.h"
 #include "Primitives.h"
 
-void PrimitiveContainer::Add(const char* name,
-                             FramePrimitiveRoutine routine,
-                             bool classSide) {
-    assert(framePrims.find(name) == framePrims.end());
-    framePrims[std::string(name)] = {FramePrim(routine, classSide, 0),
-                                     FramePrim()};
-}
-void PrimitiveContainer::Add(const char* name,
-                             BinaryPrimitiveRoutine routine,
-                             bool classSide) {
-    assert(binaryPrims.find(name) == binaryPrims.end());
-    binaryPrims[std::string(name)] = {BinaryPrim(routine, classSide, 0),
-                                      BinaryPrim()};
-}
-
-void PrimitiveContainer::Add(const char* name,
-                             UnaryPrimitiveRoutine routine,
-                             bool classSide) {
-    assert(unaryPrims.find(name) == unaryPrims.end());
-    unaryPrims[std::string(name)] = {UnaryPrim(routine, classSide, 0),
-                                     UnaryPrim()};
-}
-
-void PrimitiveContainer::Add(const char* name,
-                             TernaryPrimitiveRoutine routine,
-                             bool classSide) {
-    assert(ternaryPrims.find(name) == ternaryPrims.end());
-    ternaryPrims[std::string(name)] = {TernaryPrim(routine, classSide, 0),
-                                       TernaryPrim()};
-}
-
 void PrimitiveContainer::Add(const char* name, FramePrimitiveRoutine routine,
                              bool classSide, size_t hash) {
     assert(framePrims.find(name) == framePrims.end());
