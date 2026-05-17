@@ -43,7 +43,7 @@ public:
     [[nodiscard]] inline size_t GetObjectSize() const override;
 
     [[nodiscard]] inline int64_t GetHash() const override {
-        return (int64_t)embeddedInteger;
+        return embeddedInteger;
     }
 
     void MarkObjectAsInvalid() override;
