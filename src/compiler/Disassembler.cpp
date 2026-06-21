@@ -179,6 +179,12 @@ void Disassembler::dumpMethod(uint8_t* bytecodes, size_t numberOfBytecodes,
         // indent, bytecode index, bytecode mnemonic
         DebugDump("%s%4d:%s  ", indent, bc_idx,
                   Bytecode::GetBytecodeName(bytecode));
+#ifdef BYTECODE_HEATMAP
+        if (method != nullptr) {
+            DebugPrint("[hits: %llu] ",
+                       (unsigned long long)method->heatmap[bc_idx]);
+        }
+#endif
         // parameters (if any)
         if (Bytecode::GetBytecodeLength(bytecode) == 1) {
             DebugPrint("\n");

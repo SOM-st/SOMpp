@@ -68,11 +68,17 @@ uint8_t* Interpreter::currentBytecodes;
 
 template <bool PrintBytecodes>
 vm_oop_t Interpreter::Start() {
+#ifdef BYTECODE_HEATMAP
+  #define HEATMAP_INC() method->heatmap[bytecodeIndexGlobal]++
+#else
+  #define HEATMAP_INC() ((void)0)
+#endif
 #define PROLOGUE(bcCount)                 \
     {                                     \
         if constexpr (PrintBytecodes) {   \
             disassembleMethod();          \
         }                                 \
+        HEATMAP_INC();                   \
         bytecodeIndexGlobal += (bcCount); \
     }
 

@@ -221,6 +221,11 @@ private:
 #ifdef UNSAFE_FRAME_OPTIMIZATION
     GCFrame* cachedFrame;
 #endif
+
+#ifdef BYTECODE_HEATMAP
+    // ponytail: leaked on shutdown; clones share via memcpy in CloneForMovingGC.
+    uint64_t* heatmap;
+#endif
     gc_oop_t* indexableFields;
     uint8_t* bytecodes;
 };

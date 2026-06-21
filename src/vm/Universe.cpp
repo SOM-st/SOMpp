@@ -413,6 +413,17 @@ void Universe::initialize(int32_t _argc, char** _argv) {
 
     VMArray* argumentsArray = NewArrayFromStrings(argv);
     interpretMethod(systemObject, initialize, argumentsArray);
+
+#ifdef BYTECODE_HEATMAP
+    if (dumpBytecodes != 0) {
+        for (auto& g : globals) {
+            auto* cls = dynamic_cast<VMClass*>((AbstractVMObject*)load_ptr(g.second));
+            if (cls != nullptr) {
+                Disassembler::Dump(cls);
+            }
+        }
+    }
+#endif
 }
 
 Universe::~Universe() {

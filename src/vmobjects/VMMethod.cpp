@@ -74,6 +74,10 @@ VMMethod::VMMethod(VMSymbol* signature, size_t bcCount,
     }
     bytecodes = (uint8_t*)(&indexableFields + 2 + GetNumberOfIndexableFields());
 
+#ifdef BYTECODE_HEATMAP
+    heatmap = new uint64_t[bcCount]();
+#endif
+
     write_barrier(this, signature);
 }
 

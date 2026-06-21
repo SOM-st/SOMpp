@@ -22,3 +22,4 @@ SOM.xcodeproj/xcuserdata
 build/Debug
 build/Smalltalk
 build/SOM.build
+cmake-*

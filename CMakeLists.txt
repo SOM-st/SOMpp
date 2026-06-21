@@ -72,6 +72,7 @@ option(CACHE_INTEGER "Enable caching of boxed integers" FALSE)
 set(INT_CACHE_MIN_VALUE -5  CACHE STRING "Lower bound of cached integers")
 set(INT_CACHE_MAX_VALUE 100 CACHE STRING "Upper bound of cached integers")
 option(GENERATE_INTEGER_HISTOGRAM "Generate histogram of allocated integers" FALSE)
+option(BYTECODE_HEATMAP "Count per-method bytecode hits and show them in the disassembler" FALSE)
 
 option(USE_VECTOR_PRIMITIVES "Use Vector primitives" TRUE)
 
@@ -99,6 +100,9 @@ endif ()
 
 if (GENERATE_INTEGER_HISTOGRAM)
   add_definitions(-DGENERATE_INTEGER_HISTOGRAM)
+endif ()
+if (BYTECODE_HEATMAP)
+  add_definitions(-DBYTECODE_HEATMAP)
 endif ()
 if(USE_VECTOR_PRIMITIVES)
   add_definitions(-DUSE_VECTOR_PRIMITIVES=true)
