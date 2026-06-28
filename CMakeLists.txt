@@ -66,7 +66,7 @@ file(GLOB PRIMITIVESCORE_SRC ${PRIMITIVESCORE_DIR}/*.cpp)
 file(GLOB UNITTEST_SRC    ${UNITTEST_DIR}/*.cpp)
 
 option(USE_TAGGING "Enable immediate integers using tagging" FALSE)
-set(GC_TYPE "COPYING" CACHE STRING "Select the type of GC to be used: COPYING, MARK_SWEEP, GENERATIONAL")
+set(GC_TYPE "COPYING" CACHE STRING "Select the type of GC to be used: COPYING, MARK_SWEEP, GENERATIONAL, DEBUG_MARK_SWEEP")
 
 option(CACHE_INTEGER "Enable caching of boxed integers" FALSE)
 set(INT_CACHE_MIN_VALUE -5  CACHE STRING "Lower bound of cached integers")
