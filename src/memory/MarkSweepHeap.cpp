@@ -71,7 +71,7 @@ void MarkSweepHeap::carveNewPage(size_t classIndex) {
     size_t const cellSize = cellSizeForClass(classIndex);
     size_t const numCells = PAGE_SIZE / cellSize;
 
-    char* memory = (char*)malloc(PAGE_SIZE);
+    char* memory = (char*)calloc(1, PAGE_SIZE);
     if (memory == nullptr) {
         ErrorPrint("\nFailed to allocate a " + to_string(PAGE_SIZE) +
                    " Byte heap page.\n");
@@ -86,7 +86,7 @@ void MarkSweepHeap::carveNewPage(size_t classIndex) {
     FreeListEntry* head = freeLists[classIndex];
     for (size_t i = 0; i < numCells; i++) {
         char* p = memory + (i * cellSize);
-        // unmark so the sweeper doesn't read malloc garbage as a live mark
+        // keep the unmarked invariant explicit so the sweeper reclaims it
         setCellMark(p, GC_UNMARKED);
         auto* cell = (FreeListEntry*)p;
         cell->next = head;
