@@ -53,8 +53,8 @@ jobs:
           echo $CC $CXX
           mkdir cmake-build
           cd cmake-build
-          echo cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }} -DFIND_COMPATIBLE_CLANG_STDLIB_INCLUDE_DIRS=false  -DCMAKE_BUILD_TYPE=Debug
-          cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }} -DFIND_COMPATIBLE_CLANG_STDLIB_INCLUDE_DIRS=false -DCMAKE_BUILD_TYPE=Debug
+          echo cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }} -DCMAKE_BUILD_TYPE=Debug
+          cmake .. -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }} -DCMAKE_BUILD_TYPE=Debug
           make -j5
 
       - name: Run Unit Tests

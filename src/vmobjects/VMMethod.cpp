@@ -121,6 +121,22 @@ GCFrame* VMMethod::GetCachedFrame() const {
     return cachedFrame;
 }
 
+bool VMMethod::HasPushBlockBytecode() const {
+    if (!hasPushBlockBytecode) {
+        size_t i = 0;
+        while (i < bcLength) {
+            uint8_t const bytecode = bytecodes[i];
+            if (bytecode == BC_PUSH_BLOCK) {
+                hasPushBlockBytecode = true;
+                return true;
+            }
+            i += Bytecode::GetBytecodeLength(bytecode);
+        }
+        hasPushBlockBytecode = false;
+    }
+    return *hasPushBlockBytecode;
+}
+
 void VMMethod::SetCachedFrame(VMFrame* frame) {
     cachedFrame = store_with_separate_barrier(frame);
     if (frame != nullptr) {

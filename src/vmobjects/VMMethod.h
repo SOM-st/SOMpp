@@ -27,6 +27,7 @@
  */
 
 #include <iostream>
+#include <optional>
 #include <queue>
 
 #include "../compiler/LexicalScope.h"
@@ -140,11 +141,17 @@ public:
         return bytecodes[indx];
     }
 
-    inline void SetBytecode(size_t indx, uint8_t val) { bytecodes[indx] = val; }
+    inline void SetBytecode(size_t indx, uint8_t val) {
+        bytecodes[indx] = val;
+#ifdef UNSAFE_FRAME_OPTIMIZATION
+        hasPushBlockBytecode.reset();
+#endif
+    }
 
 #ifdef UNSAFE_FRAME_OPTIMIZATION
     void SetCachedFrame(VMFrame* frame);
     GCFrame* GetCachedFrame() const;
+    [[nodiscard]] bool HasPushBlockBytecode() const;
 #endif
 
     void WalkObjects(walk_heap_fn /*unused*/) override;
@@ -220,6 +227,7 @@ private:
 
 #ifdef UNSAFE_FRAME_OPTIMIZATION
     GCFrame* cachedFrame;
+    mutable std::optional<bool> hasPushBlockBytecode;
 #endif
 
 #ifdef BYTECODE_HEATMAP
