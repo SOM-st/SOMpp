@@ -11,7 +11,7 @@ jobs:
       fail-fast: false # we want all jobs to run, because they may fail independently
       matrix:
         compiler: [clang, gcc]
-        gc: [GENERATIONAL, DEBUG_MARK_SWEEP, COPYING]
+        gc: [GENERATIONAL, DEBUG_MARK_SWEEP, COPYING, MARK_SWEEP]
         cmake_flags:
           - "-DUSE_TAGGING=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"

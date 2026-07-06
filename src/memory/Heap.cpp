@@ -78,3 +78,7 @@ template Heap<CopyingHeap>::~Heap();
 class DebugMarkSweepHeap;
 template DebugMarkSweepHeap* Heap<DebugMarkSweepHeap>::theHeap;
 template Heap<DebugMarkSweepHeap>::~Heap();
+
+class MarkSweepHeap;
+template MarkSweepHeap* Heap<MarkSweepHeap>::theHeap;
+template Heap<MarkSweepHeap>::~Heap();
