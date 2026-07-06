@@ -1,4 +1,4 @@
-#include "MarkSweepCollector.h"
+#include "DebugMarkSweepCollector.h"
 
 #include <cstddef>
 #include <vector>
@@ -10,14 +10,14 @@
 #include "../vmobjects/IntegerBox.h"
 #include "../vmobjects/ObjectFormats.h"
 #include "../vmobjects/VMFrame.h"
-#include "MarkSweepHeap.h"
+#include "DebugMarkSweepHeap.h"
 
 #define GC_MARKED 3456
 
-void MarkSweepCollector::Collect() {
-    DebugLog("MarkSweep Collect\n");
+void DebugMarkSweepCollector::Collect() {
+    DebugLog("DebugMarkSweep Collect\n");
 
-    auto* heap = GetHeap<MarkSweepHeap>();
+    auto* heap = GetHeap<DebugMarkSweepHeap>();
     Timer::GCTimer.Resume();
     // reset collection trigger
     heap->resetGCTrigger();
@@ -70,7 +70,7 @@ static gc_oop_t mark_object(gc_oop_t oop) {
     return oop;
 }
 
-void MarkSweepCollector::markReachableObjects() {
+void DebugMarkSweepCollector::markReachableObjects() {
     // This walks the globals of the universe, and the interpreter
     Universe::WalkGlobals(mark_object);
 }
