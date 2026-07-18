@@ -26,6 +26,11 @@ the SOM standard library and a number of examples are included as a git submodul
 Please see the [main project page][SOMst] for links to other VM implementations.
 
 
+This repository includes a [`justfile`](justfile) wrapping all the commands
+below as recipes. Run `just` to list them (requires
+[`just`](https://github.com/casey/just?tab=readme-ov-file#installation)).
+
+
 Prerequisites
 -------------
 
@@ -33,7 +38,7 @@ The SOM standard library and examples are located in the `core-lib` git submodul
 Before building, initialize and fetch the submodules:
 
 ```bash
-git submodule update --init --recursive
+just submodules
 ```
 
 
@@ -43,21 +48,19 @@ Building
 SOM++ uses CMake and an optimized release build can be built like this:
 
 ```bash
-mkdir cmake-build && cd cmake-build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+just build
 ```
 
 Afterwards, the tests can be executed with:
 
 ```bash
-./SOM++ -cp ../Smalltalk ../TestSuite/TestHarness.som
+just test
 ```
 
 A simple Hello World program is executed with:
 
 ```bash
-./SOM++ -cp ../Smalltalk ../Examples/Hello.som
+just hello
 ```
 
 Information on previous authors are included in the AUTHORS file. This code is
@@ -93,9 +96,7 @@ Development Build and Testing
 A build with assertions for development and debugging can be built with:
 
 ```bash
-mkdir cmake-debug && cd cmake-debug
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-make -j
+just debug
 ```
 
 This build also creates a `unittests` binary, which uses cppunit for
@@ -105,7 +106,7 @@ in `TestSuite/BasicInterpreterTests`, as well as the SOM test suite.
 The unit tests need the SOM classpath set as follows:
 
 ```bash
-./unittests -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
+just unittests
 ```
 
 Code Style and Linting
@@ -115,8 +116,7 @@ To have a somewhat consistent code style and catch some basic bugs, the CI
 setup runs `clang-format` and `clang-tidy`
 
 ```bash
-clang-tidy --config-file=.clang-tidy src/**/*.cpp -- -fdiagnostics-absolute-paths
-clang-format --dry-run --style=file --Werror src/*.cpp  src/**/*.cpp src/**/*.h
+just lint
 ```
 
 Build Status
