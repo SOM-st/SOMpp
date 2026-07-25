@@ -164,7 +164,7 @@ void EmitPUSHBLOCK(MethodGenerationContext& mgenc, const Parser& parser,
                    VMInvokable* block) {
     const uint8_t idx = mgenc.AddLiteralIfAbsent(block, parser);
     Emit2(mgenc, BC_PUSH_BLOCK, idx, 1);
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     if (block->RequiresClosureContext()) {
         mgenc.SetHasPushBlockBytecode();
     }
@@ -351,7 +351,7 @@ void EmitRETURNLOCAL(MethodGenerationContext& mgenc, const Parser& parser) {
 
 void EmitRETURNNONLOCAL(MethodGenerationContext& mgenc) {
     Emit1(mgenc, BC_RETURN_NON_LOCAL, 0);
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     mgenc.SetHasNonLocalReturn();
 #endif
 }
@@ -461,7 +461,7 @@ size_t Emit3WithDummy(MethodGenerationContext& mgenc, uint8_t bytecode,
 }
 
 void EmitPushFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     mgenc.SetAccessesClosureVariables();
 #endif
     // if (ctxLevel == 0) {
@@ -480,7 +480,7 @@ void EmitPushFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
 }
 
 void EmitPopFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     mgenc.SetAccessesClosureVariables();
 #endif
     // if (ctxLevel == 0) {

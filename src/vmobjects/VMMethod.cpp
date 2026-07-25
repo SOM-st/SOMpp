@@ -64,7 +64,7 @@ VMMethod::VMMethod(VMSymbol* signature, size_t bcCount,
                             : Signature::GetNumberOfArguments(signature)),
       numberOfConstants(numberOfConstants), lexicalScope(lexicalScope),
       inlinedLoops(inlinedLoops) {
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     cachedFrame = nullptr;
 #endif
 
@@ -102,7 +102,7 @@ VMMethod* VMMethod::CloneForMovingGC() const {
 void VMMethod::WalkObjects(walk_heap_fn walk) {
     VMInvokable::WalkObjects(walk);
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     if (cachedFrame != nullptr) {
         cachedFrame = static_cast<GCFrame*>(walk(cachedFrame));
     }
@@ -116,7 +116,7 @@ void VMMethod::WalkObjects(walk_heap_fn walk) {
     }
 }
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
 GCFrame* VMMethod::GetCachedFrame() const {
     return cachedFrame;
 }
@@ -191,7 +191,7 @@ void VMMethod::InlineInto(MethodGenerationContext& mgenc, const Parser& parser,
     if (mergeScope) {
         mgenc.MergeIntoScope(*lexicalScope);
     }
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     if (hasNonLocalReturn) {
         mgenc.SetHasNonLocalReturn();
     }
