@@ -197,7 +197,6 @@ private:
 #ifdef FRAME_OPTIMIZATION
     bool hasPushBlockBytecode{false};
 
-    // does directly or indirectly a non-local return
     bool hasNonLocalReturn{false};
 
     bool accessesClosureVariables{false};
