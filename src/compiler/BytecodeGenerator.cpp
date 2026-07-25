@@ -164,6 +164,9 @@ void EmitPUSHBLOCK(MethodGenerationContext& mgenc, const Parser& parser,
                    VMInvokable* block) {
     const uint8_t idx = mgenc.AddLiteralIfAbsent(block, parser);
     Emit2(mgenc, BC_PUSH_BLOCK, idx, 1);
+#ifdef UNSAFE_FRAME_OPTIMIZATION
+    mgenc.SetHasPushBlockBytecode();
+#endif
 }
 
 void EmitPUSHCONSTANT(MethodGenerationContext& mgenc, const Parser& parser,
