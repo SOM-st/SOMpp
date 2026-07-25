@@ -38,20 +38,20 @@
 // this macro returns a shifted ptr by offset bytes
 #define SHIFTED_PTR(ptr, offset) ((void*)((size_t)(ptr) + (size_t)(offset)))
 
-/* chbol: this table is not correct anymore because of introduction of
- * class AbstractVMObject
- **************************VMOBJECT****************************
+/**************************VMOBJECT******************************
  * ____________________________________________________________ *
- *| vtable*          |   0x00 - 0x03                           |*
+ *| vtable*          |   0x00 - 0x07                           |*
  *|__________________|_________________________________________|*
- *| hash             |   0x04 - 0x07                           |*
- *| totalObjectSize  |   0x08 - 0x0b                           |*
- *| numberOfFields   |   0x0c - 0x0f                           |*
- *| gcField          |   0x10 - 0x13 (because of alignment)    |*
- *| clazz            |   0x14 - 0x17 [0 indexed instance field]|*
- *|__________________|___0x18__________________________________|*
+ *| gcfield          |   0x08 - 0x0f                           |*
+ *| hash             |   0x10 - 0x17                           |*
+ *| totalObjectSize  |   0x18 - 0x1f                           |*
+ *| numberOfFields   |   0x20 - 0x27 (because of alignment)    |*
+ *| clazz            |   0x28 - 0x2f [0 indexed instance field]|*
+ *|__________________|___0x30__________________________________|*
  *                                                              *
  ****************************************************************
+ See VMObject::AssertVMObjectStructure for the corresponding asserts
+ and keep them in sync.
  */
 
 // FIELDS starts indexing after the clazz field
@@ -134,6 +134,25 @@ public:
     [[nodiscard]] bool IsMarkedInvalid() const final;
 
     [[nodiscard]] std::string AsDebugString() const override;
+
+    static void AssertVMObjectStructure() {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+        static_assert(
+            offsetof(VMObject, gcfield) == 8,
+            "vtable ptr should push gcfield to offset 8 on 64-bit systems. If "
+            "this fails, please update the offsets in the VMObject structure "
+            "at the top of this file accordingly.");
+        static_assert(offsetof(VMObject, hash) == 16,
+                      "hash should be at offset 16");
+        static_assert(offsetof(VMObject, totalObjectSize) == 24,
+                      "totalObjectSize should be at offset 24");
+        static_assert(offsetof(VMObject, numberOfFields) == 32,
+                      "numberOfFields should be at offset 32");
+        static_assert(offsetof(VMObject, clazz) == 40,
+                      "clazz should be at offset 40");
+#pragma GCC diagnostic pop
+    }
 
 protected:
     void nilInitializeFields();
