@@ -127,7 +127,7 @@ public:
 
     bool LastBytecodeIs(size_t indexFromEnd, uint8_t bytecode);
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     void SetHasPushBlockBytecode() { hasPushBlockBytecode = true; }
 
     void SetHasNonLocalReturn() { hasNonLocalReturn = true; }
@@ -194,7 +194,7 @@ private:
 
     bool isCurrentlyInliningABlock{false};
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     bool hasPushBlockBytecode{false};
 
     // does directly or indirectly a non-local return

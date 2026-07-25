@@ -86,7 +86,7 @@ VMInvokable* MethodGenerationContext::Assemble() {
         meth->SetBytecode(i, bytecode[i]);
     }
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     if (hasPushBlockBytecode) {
         meth->SetHasPushBlockBytecode();
     }
@@ -347,7 +347,7 @@ bool MethodGenerationContext::FindVar(std::string& var, int64_t* index,
             (*context)++;
             bool const found =
                 outerGenc->FindVar(var, index, context, isArgument);
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
             if (found) {
                 SetAccessesClosureVariables();
             }

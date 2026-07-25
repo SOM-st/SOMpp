@@ -58,7 +58,7 @@ public:
             mgencWithInlined) { /* NOOP for everything but VMMethods */ }
     virtual const Variable* GetArgument(size_t /*unused*/, size_t /*unused*/);
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     [[nodiscard]] virtual bool RequiresClosureContext() const { return false; }
 #endif
 

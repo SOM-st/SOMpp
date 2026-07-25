@@ -189,7 +189,7 @@ public:
 
     void ResetBytecodeIndex();
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     void SetPreviousFrameOnReuse(VMFrame* previousFrame) {
         this->previousFrame = store_root(previousFrame);
     }
