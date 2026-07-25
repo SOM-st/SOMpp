@@ -129,6 +129,10 @@ public:
 
 #ifdef UNSAFE_FRAME_OPTIMIZATION
     void SetHasPushBlockBytecode() { hasPushBlockBytecode = true; }
+
+    void SetHasNonLocalReturn() { hasNonLocalReturn = true; }
+
+    void SetAccessesClosureVariables() { accessesClosureVariables = true; }
 #endif
 
 private:
@@ -192,6 +196,11 @@ private:
 
 #ifdef UNSAFE_FRAME_OPTIMIZATION
     bool hasPushBlockBytecode{false};
+
+    // does directly or indirectly a non-local return
+    bool hasNonLocalReturn{false};
+
+    bool accessesClosureVariables{false};
 #endif
 
     make_testable(public);

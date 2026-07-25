@@ -191,6 +191,14 @@ void VMMethod::InlineInto(MethodGenerationContext& mgenc, const Parser& parser,
     if (mergeScope) {
         mgenc.MergeIntoScope(*lexicalScope);
     }
+#ifdef UNSAFE_FRAME_OPTIMIZATION
+    if (hasNonLocalReturn) {
+        mgenc.SetHasNonLocalReturn();
+    }
+    if (accessesClosureVariables) {
+        mgenc.SetAccessesClosureVariables();
+    }
+#endif
     inlineInto(mgenc, parser);
 }
 
