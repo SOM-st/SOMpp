@@ -90,6 +90,12 @@ VMInvokable* MethodGenerationContext::Assemble() {
     if (hasPushBlockBytecode) {
         meth->SetHasPushBlockBytecode();
     }
+    if (hasNonLocalReturn) {
+        meth->SetHasNonLocalReturn();
+    }
+    if (accessesClosureVariables) {
+        meth->SetAccessesClosureVariables();
+    }
 #endif
 
     // return the method - the holder field is to be set later on!
@@ -339,7 +345,14 @@ bool MethodGenerationContext::FindVar(std::string& var, int64_t* index,
             }
 
             (*context)++;
-            return outerGenc->FindVar(var, index, context, isArgument);
+            bool const found =
+                outerGenc->FindVar(var, index, context, isArgument);
+#ifdef UNSAFE_FRAME_OPTIMIZATION
+            if (found) {
+                SetAccessesClosureVariables();
+            }
+#endif
+            return found;
         }
         *isArgument = true;
     }
