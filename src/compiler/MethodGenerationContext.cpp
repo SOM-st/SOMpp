@@ -86,6 +86,12 @@ VMInvokable* MethodGenerationContext::Assemble() {
         meth->SetBytecode(i, bytecode[i]);
     }
 
+#ifdef UNSAFE_FRAME_OPTIMIZATION
+    if (hasPushBlockBytecode) {
+        meth->SetHasPushBlockBytecode();
+    }
+#endif
+
     // return the method - the holder field is to be set later on!
     return meth;
 }
