@@ -51,7 +51,7 @@ build_and_test:
         GC: [MARK_SWEEP]
         CMAKE_FLAGS: ["-DUSE_TAGGING=true"]
 
-  tags: [$MACHINE]
+  tags: [kent-$MACHINE]
   script:
     - rm -rf release && mkdir release
     - rm -rf debug && mkdir debug
@@ -117,6 +117,6 @@ build_and_test:
 
 complete_benchmarking:
   stage: benchmark-completion
-  tags: [yuria3]
+  tags: [kent-yuria3]
   script:
     - rebench --experiment="CI ID $CI_PIPELINE_ID" --report-completion rebench.conf
