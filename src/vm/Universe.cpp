@@ -100,6 +100,7 @@ void Universe::Start(int32_t argc, char** argv) {
 
 void Universe::BasicInit() {
     assert(Bytecode::BytecodeDefinitionsAreConsistent());
+    VMObject::AssertVMObjectStructure();
 }
 
 void Universe::Shutdown() {
