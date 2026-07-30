@@ -121,10 +121,10 @@ Code Style and Linting
 ----------------------
 
 To have a somewhat consistent code style and catch some basic bugs, the CI
-setup runs `clang-format` and `clang-tidy`
+setup runs `clang-format` and `clang-tidy` as part of the CMake setup.
 
 ```bash
-clang-tidy --config-file=.clang-tidy src/**/*.cpp -- -fdiagnostics-absolute-paths
+make check-tidy
 clang-format --dry-run --style=file --Werror src/*.cpp  src/**/*.cpp src/**/*.h
 ```
 

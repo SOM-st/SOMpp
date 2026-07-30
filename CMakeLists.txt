@@ -255,6 +255,17 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_link_libraries(unittests ${LIB_CPPUNIT})
 endif()
 
+find_program(CLANG_TIDY_EXE NAMES clang-tidy-20 clang-tidy-mp-20 clang-tidy)
+if(CLANG_TIDY_EXE)
+  get_directory_property(DEFS_FOR_TIDY COMPILE_DEFINITIONS)
+  list(TRANSFORM DEFS_FOR_TIDY PREPEND "-D")
+  message(STATUS "Passed flags: ${DEFS_FOR_TIDY}")
+  add_custom_target(check-tidy
+      COMMAND ${CLANG_TIDY_EXE} --config-file=${ROOT_DIR}/.clang-tidy ${SRC_DIR}/*.cpp ${SRC_DIR}/**/*.cpp -- -fdiagnostics-absolute-paths ${DEFS_FOR_TIDY} -DUNITTESTS
+      COMMENT "Checking code with clang-tidy"
+  )
+endif()
+
 
 enable_testing()
 
