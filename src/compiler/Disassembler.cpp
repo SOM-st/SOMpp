@@ -231,9 +231,8 @@ void Disassembler::dumpMethod(uint8_t* bytecodes, size_t numberOfBytecodes,
                     if (snprintf(nindent, indent_size, "%s\t", indent) < 0) {
                         ErrorExit("snprintf failed");
                     }
-                    Disassembler::DumpMethod(
-                        static_cast<VMMethod*>(method->GetConstant(bc_idx)),
-                        nindent);
+                    static_cast<VMInvokable*>(method->GetConstant(bc_idx))
+                        ->Dump(indent, printObjects);
                 } else {
                     DebugPrint("\n");
                 }
@@ -560,9 +559,9 @@ void Disassembler::DumpBytecode(VMFrame* frame, VMMethod* method,
         }
         case BC_PUSH_BLOCK: {
             DebugPrint("block: (index: %d) ", BC_1);
-            auto* meth = dynamic_cast<VMMethod*>(
+            auto* invk = dynamic_cast<VMInvokable*>(
                 (AbstractVMObject*)method->GetConstant(bc_idx));
-            DumpMethod(meth, "$");
+            invk->Dump("$", true);
             break;
         }
         case BC_PUSH_CONSTANT: {
