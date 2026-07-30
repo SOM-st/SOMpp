@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "../misc/debug.h"
-#include "../misc/defs.h"
+#include "../misc/defs.h"  // NOLINT(misc-include-cleaner)
 #include "../vm/IsValidObject.h"
 #include "../vm/Universe.h"
 #include "../vmobjects/IntegerBox.h"
