@@ -260,12 +260,30 @@ enable_testing()
 
 add_test(
   NAME    unittests
-  COMMAND unittests -cp ${ROOT_DIR}/Smalltalk ${ROOT_DIR}/Examples/Hello.som)
+  COMMAND unittests -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/TestSuite/BasicInterpreterTests ${ROOT_DIR}/Examples/Hello.som)
 
 add_test(
   NAME som-tests
   COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk ${ROOT_DIR}/TestSuite/TestHarness.som)
 
 add_test(
-  NAME benchmarks
-  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/LanguageFeatures ${ROOT_DIR}/Examples/Benchmarks/All.som)
+  NAME benchmark-richards
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/Richards ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som Richards 1 1)
+add_test(
+  NAME benchmark-deltablue
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/DeltaBlue ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som DeltaBlue 1 100)
+add_test(
+  NAME benchmark-nbody
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/NBody ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som NBody 1 1000)
+add_test(
+  NAME benchmark-json
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/Json ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som Json 1 1)
+add_test(
+  NAME benchmark-graphsearch
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/GraphSearch ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som GraphSearch 1 7)
+add_test(
+  NAME benchmark-pageranke
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/PageRank ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som PageRank 1 7)
+add_test(
+  NAME benchmark-fannkuch
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som Fannkuch 1 7)
