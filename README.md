@@ -125,7 +125,7 @@ setup runs `clang-format` and `clang-tidy` as part of the CMake setup.
 
 ```bash
 make check-tidy
-clang-format --dry-run --style=file --Werror src/*.cpp  src/**/*.cpp src/**/*.h
+make check-format
 ```
 
 Build Status

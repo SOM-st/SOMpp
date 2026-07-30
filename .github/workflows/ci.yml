@@ -87,7 +87,8 @@ jobs:
       - name: Clang Format
         if: matrix.compiler == 'clang' && matrix.gc == 'GENERATIONAL'
         run: |
-          clang-format-20 --dry-run --style=file --Werror src/*.cpp  src/**/*.cpp src/**/*.h
+          cd cmake-build
+          make check-format
 
       # Disabled because it's too slow with the sanitizers
       # - name: Test SomSom

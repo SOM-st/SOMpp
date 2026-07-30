@@ -266,6 +266,14 @@ if(CLANG_TIDY_EXE)
   )
 endif()
 
+find_program(CLANG_FORMAT_EXE NAMES clang-format-20 clang-format-mp-20 clang-format)
+if(CLANG_FORMAT_EXE)
+  add_custom_target(check-format
+      COMMAND ${CLANG_FORMAT_EXE} --dry-run --Werror -style=file ${SRC_DIR}/*.cpp ${SRC_DIR}/**/*.cpp ${SRC_DIR}/**/*.h
+      COMMENT "Checking code formatting with clang-format"
+  )
+endif()
+
 
 enable_testing()
 
