@@ -146,17 +146,10 @@ public:
     void SetCachedFrame(VMFrame* frame);
     GCFrame* GetCachedFrame() const;
 
-    [[nodiscard]] bool HasPushBlockBytecode() const {
-        return hasPushBlockBytecode;
-    }
-    void SetHasPushBlockBytecode() { hasPushBlockBytecode = true; }
-
-    void SetHasNonLocalReturn() { hasNonLocalReturn = true; }
-
-    void SetAccessesClosureVariables() { accessesClosureVariables = true; }
+    void SetRequiresClosureContext() { requiresClosureContext = true; }
 
     [[nodiscard]] bool RequiresClosureContext() const override {
-        return hasNonLocalReturn || accessesClosureVariables;
+        return requiresClosureContext;
     }
 #endif
 
@@ -233,9 +226,7 @@ private:
 
 #ifdef FRAME_OPTIMIZATION
     GCFrame* cachedFrame;
-    bool hasPushBlockBytecode{false};
-    bool hasNonLocalReturn{false};
-    bool accessesClosureVariables{false};
+    bool requiresClosureContext{false};
 #endif
 
 #ifdef BYTECODE_HEATMAP

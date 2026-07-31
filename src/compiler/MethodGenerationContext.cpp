@@ -87,14 +87,8 @@ VMInvokable* MethodGenerationContext::Assemble() {
     }
 
 #ifdef FRAME_OPTIMIZATION
-    if (hasPushBlockBytecode) {
-        meth->SetHasPushBlockBytecode();
-    }
-    if (hasNonLocalReturn) {
-        meth->SetHasNonLocalReturn();
-    }
-    if (accessesClosureVariables) {
-        meth->SetAccessesClosureVariables();
+    if (requiresClosureContext) {
+        meth->SetRequiresClosureContext();
     }
 #endif
 
@@ -349,7 +343,7 @@ bool MethodGenerationContext::FindVar(std::string& var, int64_t* index,
                 outerGenc->FindVar(var, index, context, isArgument);
 #ifdef FRAME_OPTIMIZATION
             if (found) {
-                SetAccessesClosureVariables();
+                SetRequiresClosureContext();
             }
 #endif
             return found;
