@@ -715,7 +715,7 @@ VMFrame* Interpreter::popFrame() {
 
 #ifdef FRAME_OPTIMIZATION
     // remember this frame as free frame
-    if (!result->GetMethod()->HasPushBlockBytecode()) {
+    if (!result->GetMethod()->RequiresClosureContext()) {
         result->GetMethod()->SetCachedFrame(result);
     }
 #endif

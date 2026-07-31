@@ -166,7 +166,7 @@ void EmitPUSHBLOCK(MethodGenerationContext& mgenc, const Parser& parser,
     Emit2(mgenc, BC_PUSH_BLOCK, idx, 1);
 #ifdef FRAME_OPTIMIZATION
     if (block->RequiresClosureContext()) {
-        mgenc.SetHasPushBlockBytecode();
+        mgenc.SetRequiresClosureContext();
     }
 #endif
 }
@@ -352,7 +352,7 @@ void EmitRETURNLOCAL(MethodGenerationContext& mgenc, const Parser& parser) {
 void EmitRETURNNONLOCAL(MethodGenerationContext& mgenc) {
     Emit1(mgenc, BC_RETURN_NON_LOCAL, 0);
 #ifdef FRAME_OPTIMIZATION
-    mgenc.SetHasNonLocalReturn();
+    mgenc.SetRequiresClosureContext();
 #endif
 }
 
@@ -462,7 +462,7 @@ size_t Emit3WithDummy(MethodGenerationContext& mgenc, uint8_t bytecode,
 
 void EmitPushFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
 #ifdef FRAME_OPTIMIZATION
-    mgenc.SetAccessesClosureVariables();
+    mgenc.SetRequiresClosureContext();
 #endif
     // if (ctxLevel == 0) {
     if (fieldIdx == 0) {
@@ -481,7 +481,7 @@ void EmitPushFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
 
 void EmitPopFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
 #ifdef FRAME_OPTIMIZATION
-    mgenc.SetAccessesClosureVariables();
+    mgenc.SetRequiresClosureContext();
 #endif
     // if (ctxLevel == 0) {
     if (fieldIdx == 0) {

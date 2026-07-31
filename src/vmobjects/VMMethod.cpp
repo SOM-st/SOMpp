@@ -192,11 +192,8 @@ void VMMethod::InlineInto(MethodGenerationContext& mgenc, const Parser& parser,
         mgenc.MergeIntoScope(*lexicalScope);
     }
 #ifdef FRAME_OPTIMIZATION
-    if (hasNonLocalReturn) {
-        mgenc.SetHasNonLocalReturn();
-    }
-    if (accessesClosureVariables) {
-        mgenc.SetAccessesClosureVariables();
+    if (requiresClosureContext) {
+        mgenc.SetRequiresClosureContext();
     }
 #endif
     inlineInto(mgenc, parser);

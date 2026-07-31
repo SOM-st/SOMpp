@@ -128,11 +128,8 @@ public:
     bool LastBytecodeIs(size_t indexFromEnd, uint8_t bytecode);
 
 #ifdef FRAME_OPTIMIZATION
-    void SetHasPushBlockBytecode() { hasPushBlockBytecode = true; }
 
-    void SetHasNonLocalReturn() { hasNonLocalReturn = true; }
-
-    void SetAccessesClosureVariables() { accessesClosureVariables = true; }
+    void SetRequiresClosureContext() { requiresClosureContext = true; }
 #endif
 
 private:
@@ -195,11 +192,7 @@ private:
     bool isCurrentlyInliningABlock{false};
 
 #ifdef FRAME_OPTIMIZATION
-    bool hasPushBlockBytecode{false};
-
-    bool hasNonLocalReturn{false};
-
-    bool accessesClosureVariables{false};
+    bool requiresClosureContext{false};
 #endif
 
     make_testable(public);
