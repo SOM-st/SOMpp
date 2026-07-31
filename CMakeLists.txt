@@ -22,6 +22,7 @@ project(SOMpp LANGUAGES CXX)
 
 set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Make sure we have the SOM core-lib
 find_package(Git QUIET)
@@ -256,14 +257,41 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 find_program(CLANG_TIDY_EXE NAMES clang-tidy-20 clang-tidy-mp-20 clang-tidy)
+find_program(RUN_CLANG_TIDY_EXE NAMES run-clang-tidy-20 run-clang-tidy-mp-20 run-clang-tidy run-clang-tidy.py)
 if(CLANG_TIDY_EXE)
-  get_directory_property(DEFS_FOR_TIDY COMPILE_DEFINITIONS)
-  list(TRANSFORM DEFS_FOR_TIDY PREPEND "-D")
-  message(STATUS "Passed flags: ${DEFS_FOR_TIDY}")
-  add_custom_target(check-tidy
-      COMMAND ${CLANG_TIDY_EXE} --config-file=${ROOT_DIR}/.clang-tidy ${SRC_DIR}/*.cpp ${SRC_DIR}/**/*.cpp -- -fdiagnostics-absolute-paths ${DEFS_FOR_TIDY} -DUNITTESTS
-      COMMENT "Checking code with clang-tidy"
-  )
+  set(TIDY_SOURCE_FILES
+    ${MAIN_SRC}
+    ${COMPILER_SRC}
+    ${INTERPRETER_SRC}
+    ${MEMORY_SRC}
+    ${MISC_SRC}
+    ${VM_SRC}
+    ${VMOBJECTS_SRC}
+    ${PRIMITIVES_SRC}
+    ${PRIMITIVESCORE_SRC}
+    ${UNITTEST_SRC})
+
+  if(RUN_CLANG_TIDY_EXE)
+    add_custom_target(check-tidy
+      COMMAND ${RUN_CLANG_TIDY_EXE}
+        -clang-tidy-binary ${CLANG_TIDY_EXE}
+        -p ${CMAKE_BINARY_DIR}
+        ${TIDY_SOURCE_FILES}
+      WORKING_DIRECTORY ${ROOT_DIR}
+      COMMENT "Checking code with run-clang-tidy using compile_commands.json"
+      VERBATIM
+    )
+  else()
+    add_custom_target(check-tidy
+      COMMAND ${CLANG_TIDY_EXE}
+        -p=${CMAKE_BINARY_DIR}
+        --config-file=${ROOT_DIR}/.clang-tidy
+        ${TIDY_SOURCE_FILES}
+      WORKING_DIRECTORY ${ROOT_DIR}
+      COMMENT "Checking code with clang-tidy using compile_commands.json"
+      VERBATIM
+    )
+  endif()
 endif()
 
 find_program(CLANG_FORMAT_EXE NAMES clang-format-20 clang-format-mp-20 clang-format)
