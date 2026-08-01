@@ -300,6 +300,10 @@ if(CLANG_FORMAT_EXE)
       COMMAND ${CLANG_FORMAT_EXE} --dry-run --Werror -style=file ${SRC_DIR}/*.cpp ${SRC_DIR}/**/*.cpp ${SRC_DIR}/**/*.h
       COMMENT "Checking code formatting with clang-format"
   )
+  add_custom_target(format
+      COMMAND ${CLANG_FORMAT_EXE} -i --Werror -style=file ${SRC_DIR}/*.cpp ${SRC_DIR}/**/*.cpp ${SRC_DIR}/**/*.h
+      COMMENT "Format code with clang-format"
+  )
 endif()
 
 
