@@ -9,6 +9,5 @@ public:
     explicit DebugCopyingCollector(DebugCopyingHeap* h)
         : GarbageCollector(h) {};
 
-private:
     void Collect() override;
 };
