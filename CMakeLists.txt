@@ -256,8 +256,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_link_libraries(unittests ${LIB_CPPUNIT})
 endif()
 
-find_program(CLANG_TIDY_EXE NAMES clang-tidy-20 clang-tidy-mp-20 clang-tidy)
-find_program(RUN_CLANG_TIDY_EXE NAMES run-clang-tidy-20 run-clang-tidy-mp-20 run-clang-tidy run-clang-tidy.py)
+find_program(CLANG_TIDY_EXE NAMES clang-tidy-22 clang-tidy-mp-22 clang-tidy)
+find_program(RUN_CLANG_TIDY_EXE NAMES run-clang-tidy-22 run-clang-tidy-mp-22 run-clang-tidy run-clang-tidy.py)
 if(CLANG_TIDY_EXE)
   set(TIDY_SOURCE_FILES
     ${MAIN_SRC}
@@ -294,7 +294,7 @@ if(CLANG_TIDY_EXE)
   endif()
 endif()
 
-find_program(CLANG_FORMAT_EXE NAMES clang-format-20 clang-format-mp-20 clang-format)
+find_program(CLANG_FORMAT_EXE NAMES clang-format-22 clang-format-mp-22 clang-format)
 if(CLANG_FORMAT_EXE)
   add_custom_target(check-format
       COMMAND ${CLANG_FORMAT_EXE} --dry-run --Werror -style=file ${SRC_DIR}/*.cpp ${SRC_DIR}/**/*.cpp ${SRC_DIR}/**/*.h
