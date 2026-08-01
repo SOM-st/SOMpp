@@ -566,7 +566,7 @@ static vm_oop_t intSqrt(vm_oop_t self) {
 static vm_oop_t intAtRandom(vm_oop_t self) {
     int64_t const result =
         SMALL_INT_VAL(self) *
-        rand();  // NOLINT(clang-analyzer-security.insecureAPI.rand)
+        rand();  // NOLINT(clang-analyzer-security.insecureAPI.rand,misc-predictable-rand)
     return NEW_INT(result);
 }
 
@@ -662,7 +662,7 @@ static vm_oop_t intRange(vm_oop_t leftObj, vm_oop_t rightObj) {
 }
 
 _Integer::_Integer() {
-    srand((unsigned)time(nullptr));
+    srand((unsigned)time(nullptr));  // NOLINT(bugprone-random-generator-seed)
 
     Add("+", &intPlus, false);
     Add("-", &intMinus, false);

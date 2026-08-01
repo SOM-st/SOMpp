@@ -44,7 +44,7 @@
 #include "../vmobjects/VMString.h"
 #include "../vmobjects/VMSymbol.h"
 
-#if defined(__GNUC__)
+#ifdef __GNUC__
 
   #include <sys/time.h>
 
