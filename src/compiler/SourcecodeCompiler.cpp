@@ -55,7 +55,7 @@ VMClass* SourcecodeCompiler::CompileClass(const std::string& path,
     Parser parser(fp, fname);
     result = compile(parser, systemClass);
 
-    VMSymbol* cname = result->GetName();
+    VMSymbol const* const cname = result->GetName();
     std::string const cnameC = cname->GetStdString();
 
     if (file != cnameC) {

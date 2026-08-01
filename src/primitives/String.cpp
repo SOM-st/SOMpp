@@ -85,7 +85,7 @@ static vm_oop_t strEqual(vm_oop_t leftObj, vm_oop_t op1) {
         return load_ptr(trueObject);
     }
 
-    VMClass* otherClass = CLASS_OF(op1);
+    VMClass const* const otherClass = CLASS_OF(op1);
     if (otherClass != load_ptr(stringClass) &&
         otherClass != load_ptr(symbolClass)) {
         return load_ptr(falseObject);

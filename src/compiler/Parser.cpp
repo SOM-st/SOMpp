@@ -252,7 +252,7 @@ void Parser::superclass(ClassGenerationContext& cgenc) {
 
     // Load the super class, if it is not nil (break the dependency cycle)
     if (superName != SymbolFor("nil")) {
-        VMClass* superClass = Universe::LoadClass(superName);
+        VMClass const* const superClass = Universe::LoadClass(superName);
         cgenc.SetInstanceFieldsOfSuper(superClass->GetInstanceFields());
         cgenc.SetClassFieldsOfSuper(
             superClass->GetClass()->GetInstanceFields());
@@ -974,11 +974,11 @@ __attribute__((noreturn)) void Parser::ParseError(const char* msg) const {
 }
 
 __attribute__((noreturn)) void Parser::parseError(const char* msg,
-                                                  Symbol* expected) {
+                                                  Symbol const* expected) {
     bool first = true;
     std::string expectedStr;
 
-    Symbol* next = expected;
+    Symbol const* next = expected;
     while (*next != 0U) {
         if (first) {
             first = false;

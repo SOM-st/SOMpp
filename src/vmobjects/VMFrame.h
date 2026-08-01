@@ -147,7 +147,8 @@ public:
         return load_ptr(context->arguments[index]);
     }
 
-    inline vm_oop_t GetArgumentInCurrentContext(uint8_t index) {
+    [[nodiscard]] inline vm_oop_t GetArgumentInCurrentContext(
+        uint8_t index) const {
         return load_ptr(this->arguments[index]);
     }
 

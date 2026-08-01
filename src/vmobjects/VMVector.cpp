@@ -27,7 +27,7 @@ vm_oop_t VMVector::AWFYGetStorage(int64_t index) {
     // This is a method that is used by the AWFY tests, it does not handle
     // 1-0 indexing conversion
     int64_t const first = SMALL_INT_VAL(load_ptr(this->first));
-    VMArray* const storage = load_ptr(this->storage);
+    VMArray const* const storage = load_ptr(this->storage);
 
     if (index > storage->GetNumberOfIndexableFields()) {
         return load_ptr(nilObject);  // AWFY does not handle an IndexOutOfBounds
@@ -41,7 +41,7 @@ vm_oop_t VMVector::AWFYGetStorage(int64_t index) {
 vm_oop_t VMVector::GetStorage(int64_t index) {
     int64_t const first = SMALL_INT_VAL(load_ptr(this->first));
     int64_t const last = SMALL_INT_VAL(load_ptr(this->last));
-    VMArray* const storage = load_ptr(this->storage);
+    VMArray const* const storage = load_ptr(this->storage);
 
     if (index < 1 || index > last - first) {
         return IndexOutOfBounds(first + last - 1, index);
@@ -153,7 +153,7 @@ vm_oop_t VMVector::RemoveFirst() {
 vm_oop_t VMVector::RemoveObj(vm_oop_t other) {
     const int64_t first = SMALL_INT_VAL(load_ptr(this->first));
     const int64_t last = SMALL_INT_VAL(load_ptr(this->last));
-    VMArray* storage = load_ptr(this->storage);
+    VMArray const* const storage = load_ptr(this->storage);
 
     for (int64_t i = first - 1; i < last - 1; ++i) {
         vm_oop_t current = storage->GetIndexableField(i);
@@ -189,7 +189,7 @@ vm_oop_t VMVector::remove(int64_t index) {
 void VMVector::RemoveAll() {
     this->first = store_ptr(this->first, NEW_INT(1));
     this->last = store_ptr(this->last, NEW_INT(1));
-    VMArray* storage = load_ptr(this->storage);
+    VMArray const* const storage = load_ptr(this->storage);
     VMArray* newArray =
         Universe::NewArray(storage->GetNumberOfIndexableFields());
     this->storage = store_ptr(this->storage, newArray);
@@ -198,7 +198,7 @@ void VMVector::RemoveAll() {
 vm_oop_t VMVector::copyStorageArray() {
     const int64_t first = SMALL_INT_VAL(load_ptr(this->first));
     const int64_t last = SMALL_INT_VAL(load_ptr(this->last));
-    VMArray* storage = load_ptr(this->storage);
+    VMArray const* const storage = load_ptr(this->storage);
 
     VMArray* result = Universe::NewArray(last - first);
     for (int64_t i = first - 1; i < last - 1; ++i) {
