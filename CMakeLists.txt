@@ -281,6 +281,18 @@ if(CLANG_TIDY_EXE)
       COMMENT "Checking code with run-clang-tidy using compile_commands.json"
       VERBATIM
     )
+    find_program(CLANG_APPLY_REPLACEMENT_BINARY NAMES clang-apply-replacements-mp-22 clang-apply-replacements-22 clang-apply-replacements)
+    add_custom_target(tidy
+      COMMAND ${RUN_CLANG_TIDY_EXE}
+        -clang-tidy-binary ${CLANG_TIDY_EXE}
+        -clang-apply-replacements-binary ${CLANG_APPLY_REPLACEMENT_BINARY}
+        -p ${CMAKE_BINARY_DIR}
+        -fix
+        ${TIDY_SOURCE_FILES}
+      WORKING_DIRECTORY ${ROOT_DIR}
+      COMMENT "Run run-clang-tidy --fix, using compile_commands.json"
+      VERBATIM
+    )
   else()
     add_custom_target(check-tidy
       COMMAND ${CLANG_TIDY_EXE}
@@ -289,6 +301,16 @@ if(CLANG_TIDY_EXE)
         ${TIDY_SOURCE_FILES}
       WORKING_DIRECTORY ${ROOT_DIR}
       COMMENT "Checking code with clang-tidy using compile_commands.json"
+      VERBATIM
+    )
+    add_custom_target(tidy
+      COMMAND ${CLANG_TIDY_EXE}
+        --fix
+        -p=${CMAKE_BINARY_DIR}
+        --config-file=${ROOT_DIR}/.clang-tidy
+        ${TIDY_SOURCE_FILES}
+      WORKING_DIRECTORY ${ROOT_DIR}
+      COMMENT "Run clang-tidy --fix, using compile_commands.json"
       VERBATIM
     )
   endif()
