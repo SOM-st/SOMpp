@@ -68,9 +68,9 @@ static double coerceDouble(vm_oop_t x) {
  * extract the left-hand operand as an immediate Double. Afterwards, left and
  * right are prepared for the operation.
  */
-#define PREPARE_OPERANDS                                 \
-    double const right = coerceDouble(rightObj);         \
-    VMDouble* leftObj = static_cast<VMDouble*>(leftPtr); \
+#define PREPARE_OPERANDS                                             \
+    double const right = coerceDouble(rightObj);                     \
+    VMDouble const* const leftObj = static_cast<VMDouble*>(leftPtr); \
     double const left = leftObj->GetEmbeddedDouble();
 
 static vm_oop_t dblPlus(vm_oop_t leftPtr, vm_oop_t rightObj) {

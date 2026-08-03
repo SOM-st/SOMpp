@@ -45,7 +45,7 @@ SOM++ uses CMake and an optimized release build can be built like this:
 ```bash
 mkdir cmake-build && cd cmake-build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+make -j
 ```
 
 Afterwards, the tests can be executed with:
@@ -108,16 +108,33 @@ The unit tests need the SOM classpath set as follows:
 ./unittests -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
 ```
 
+These tests can also be run with CMake, either all together with `make test`
+or using the `ctest` tool, which allows to run individual tests:
+
+```
+make test
+ctest
+ctest -R unittests
+```
+
 Code Style and Linting
 ----------------------
 
 To have a somewhat consistent code style and catch some basic bugs, the CI
-setup runs `clang-format` and `clang-tidy`
+setup runs `clang-format` and `clang-tidy` as part of the CMake setup.
 
 ```bash
-clang-tidy --config-file=.clang-tidy src/**/*.cpp -- -fdiagnostics-absolute-paths
-clang-format --dry-run --style=file --Werror src/*.cpp  src/**/*.cpp src/**/*.h
+make check-tidy
+make check-format
 ```
+
+To run the format and fix tidy issues, we have:
+
+```bash
+make tidy
+make format
+```
+
 
 Build Status
 ------------

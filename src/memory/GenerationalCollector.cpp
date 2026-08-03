@@ -2,11 +2,10 @@
 
 #include <cassert>
 #include <cstddef>
-#include <cstdint>
 #include <vector>
 
 #include "../misc/debug.h"
-#include "../misc/defs.h"
+#include "../misc/defs.h"  // NOLINT(misc-include-cleaner)
 #include "../vm/IsValidObject.h"
 #include "../vm/Universe.h"
 #include "../vmobjects/IntegerBox.h"
@@ -15,12 +14,8 @@
 #include "../vmobjects/VMObjectBase.h"
 #include "GarbageCollector.h"
 
-#define INITIAL_MAJOR_COLLECTION_THRESHOLD \
-    ((uintptr_t)5 * 1024U * 1024U)  // 5 MB
-
 GenerationalCollector::GenerationalCollector(GenerationalHeap* heap)
-    : GarbageCollector(heap),
-      majorCollectionThreshold(INITIAL_MAJOR_COLLECTION_THRESHOLD) {}
+    : GarbageCollector(heap) {}
 
 static gc_oop_t mark_object(gc_oop_t oop) {
     // don't process tagged objects

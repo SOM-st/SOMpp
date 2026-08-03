@@ -21,7 +21,7 @@ uint32_t murmur3_32(const uint8_t* key, size_t len, uint32_t seed) {
         key += sizeof(uint32_t);
         h ^= murmur_32_scramble(k);
         h = (h << 13U) | (h >> 19U);
-        h = h * 5 + 0xe6546b64;
+        h = (h * 5) + 0xe6546b64;
     }
 
     k = 0;

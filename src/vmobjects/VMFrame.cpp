@@ -102,14 +102,14 @@ VMFrame* VMFrame::CloneForMovingGC() const {
     // cloning/moving within GC
 
 #if GC_TYPE == GENERATIONAL || GC_TYPE == COPYING || GC_TYPE == DEBUG_COPYING
-    VMMethod* meth = load_ptr(method);
+    VMMethod const* meth = load_ptr(method);
     if (meth->GetGCField() != 0 && meth->GetGCField() != MASK_OBJECT_IS_OLD) {
         meth = (VMMethod*)meth->GetGCField();
     }
 //    int64_t numArgs =
 //    meth->GetNumberOfArgumentsPossiblyFollowingForwardingPointer();
 #else
-    VMMethod* meth = GetMethod();
+    VMMethod const* const meth = GetMethod();
 #endif
     uint8_t const numArgs = meth->GetNumberOfArguments();
 
@@ -171,7 +171,7 @@ static void print_oop(gc_oop_t vmo) {
     } else if (vmo == nilObject) {
         Print("NIL_OBJECT\n");
     } else {
-        AbstractVMObject* o = AS_OBJ(vmo);
+        AbstractVMObject const* const o = AS_OBJ(vmo);
         Print(o->AsDebugString() + "\n");
     }
 }
@@ -230,7 +230,7 @@ void VMFrame::SetArgument(uint8_t index, uint8_t contextLevel, vm_oop_t value) {
 }
 
 void VMFrame::PrintStackTrace() const {
-    VMMethod* meth = GetMethod();
+    VMMethod const* const meth = GetMethod();
 
     if (meth->GetHolder() == load_ptr(nilObject)) {
         Print("nil");

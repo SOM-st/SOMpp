@@ -25,27 +25,27 @@ jobs:
         run: |
           sudo apt-get install libcppunit-dev
 
-      - name: Install Clang 20
+      - name: Install Clang 22
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-20 main"
+          sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main"
           sudo apt-get update
           for i in 1 2 3; do
-            sudo apt-get install -y clang-20 clang-tidy-20 && break
+            sudo apt-get install -y clang-22 clang-tidy-22 && break
             sleep 17
           done
         if: matrix.compiler == 'clang'
 
       - name: Install Clang Format
-        run: sudo apt-get install -y clang-format-20
+        run: sudo apt-get install -y clang-format-22
         if: matrix.compiler == 'clang' && matrix.gc == 'GENERATIONAL'
 
       - name: Build SOM VM
         run: |
           if [ "${{ matrix.compiler }}" = "clang" ]
           then
-            export CC=clang-20
-            export CXX=clang++-20
+            export CC=clang-22
+            export CXX=clang++-22
           else
             export CC=gcc
             export CXX=g++
@@ -81,12 +81,14 @@ jobs:
       - name: Clang Tidy
         if: matrix.compiler == 'clang'
         run: |
-          clang-tidy-20 --config-file=.clang-tidy src/*.cpp src/**/*.cpp -- -fdiagnostics-absolute-paths -DGC_TYPE=${{ matrix.gc}} ${{ matrix.cmake_flags }} -DUNITTESTS
+          cd cmake-build
+          make check-tidy
 
       - name: Clang Format
         if: matrix.compiler == 'clang' && matrix.gc == 'GENERATIONAL'
         run: |
-          clang-format-20 --dry-run --style=file --Werror src/*.cpp  src/**/*.cpp src/**/*.h
+          cd cmake-build
+          make check-format
 
       # Disabled because it's too slow with the sanitizers
       # - name: Test SomSom

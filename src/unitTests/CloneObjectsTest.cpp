@@ -32,7 +32,7 @@
 
 void CloneObjectsTest::testCloneObject() {
     auto* orig = new (GetHeap<HEAP_CLS>(), 0) VMObject(0, sizeof(VMObject));
-    VMObject* clone = orig->CloneForMovingGC();
+    VMObject const* const clone = orig->CloneForMovingGC();
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("class differs!!", orig->GetClass(),
                                  clone->GetClass());
@@ -47,8 +47,8 @@ void CloneObjectsTest::testCloneObject() {
 }
 
 void CloneObjectsTest::testCloneInteger() {
-    VMInteger* orig = Universe::NewInteger(42);
-    VMInteger* clone = orig->CloneForMovingGC();
+    VMInteger const* const orig = Universe::NewInteger(42);
+    VMInteger const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("class differs!!", orig->GetClass(),
@@ -61,8 +61,8 @@ void CloneObjectsTest::testCloneInteger() {
 }
 
 void CloneObjectsTest::testCloneDouble() {
-    VMDouble* orig = Universe::NewDouble(123.4);
-    VMDouble* clone = orig->CloneForMovingGC();
+    VMDouble const* const orig = Universe::NewDouble(123.4);
+    VMDouble const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("class differs!!", orig->GetClass(),
@@ -75,8 +75,8 @@ void CloneObjectsTest::testCloneDouble() {
 }
 
 void CloneObjectsTest::testCloneString() {
-    VMString* orig = Universe::NewString("foobar");
-    VMString* clone = orig->CloneForMovingGC();
+    VMString const* const orig = Universe::NewString("foobar");
+    VMString const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("class differs!!", orig->GetClass(),
@@ -101,8 +101,8 @@ void CloneObjectsTest::testCloneString() {
 }
 
 void CloneObjectsTest::testCloneSymbol() {
-    VMSymbol* orig = NewSymbol("foobar");
-    VMSymbol* clone = orig->CloneForMovingGC();
+    VMSymbol const* const orig = NewSymbol("foobar");
+    VMSymbol const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("class differs!!", orig->GetClass(),
@@ -116,11 +116,11 @@ void CloneObjectsTest::testCloneSymbol() {
 }
 
 void CloneObjectsTest::testCloneArray() {
-    VMArray* orig = Universe::NewArray(3);
+    VMArray* const orig = Universe::NewArray(3);
     orig->SetIndexableField(0, Universe::NewString("foobar42"));
     orig->SetIndexableField(1, Universe::NewString("foobar43"));
     orig->SetIndexableField(2, Universe::NewString("foobar44"));
-    VMArray* clone = orig->CloneForMovingGC();
+    VMArray const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("class differs!!", orig->clazz, clone->clazz);
@@ -150,9 +150,9 @@ void CloneObjectsTest::testCloneBlock() {
     VMMethod* method =
         Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
                             new LexicalScope(nullptr, {}, {}), inlinedLoops);
-    VMBlock* orig = Universe::NewBlock(method, Interpreter::GetFrame(),
-                                       method->GetNumberOfArguments());
-    VMBlock* clone = orig->CloneForMovingGC();
+    VMBlock const* const orig = Universe::NewBlock(
+        method, Interpreter::GetFrame(), method->GetNumberOfArguments());
+    VMBlock const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("class differs!!", orig->clazz, clone->clazz);
@@ -168,10 +168,10 @@ void CloneObjectsTest::testCloneBlock() {
                                  clone->GetHash());
 }
 void CloneObjectsTest::testClonePrimitive() {
-    VMSymbol* primitiveSymbol = NewSymbol("myPrimitive");
+    VMSymbol* const primitiveSymbol = NewSymbol("myPrimitive");
     auto* orig = dynamic_cast<VMPrimitive*>(
         VMPrimitive::GetEmptyPrimitive(primitiveSymbol, false));
-    VMPrimitive* clone = orig->CloneForMovingGC();
+    VMPrimitive const* const clone = orig->CloneForMovingGC();
     CPPUNIT_ASSERT_EQUAL_MESSAGE("signature differs!!", orig->signature,
                                  clone->signature);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("holder differs!!", orig->holder,
@@ -186,7 +186,7 @@ void CloneObjectsTest::testClonePrimitive() {
 
 void CloneObjectsTest::testCloneEvaluationPrimitive() {
     auto* orig = new (GetHeap<HEAP_CLS>(), 0) VMEvaluationPrimitive(1);
-    VMEvaluationPrimitive* clone = orig->CloneForMovingGC();
+    VMEvaluationPrimitive const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT_EQUAL_MESSAGE("signature differs!!", orig->signature,
                                  clone->signature);
@@ -212,7 +212,7 @@ void CloneObjectsTest::testCloneFrame() {
     orig->SetContext(context);
     VMInteger* dummyArg = Universe::NewInteger(1111);
     orig->SetArgument(0, 0, dummyArg);
-    VMFrame* clone = orig->CloneForMovingGC();
+    VMFrame const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("objectSize differs!!", orig->totalObjectSize,
@@ -234,10 +234,10 @@ void CloneObjectsTest::testCloneMethod() {
     VMSymbol* methodSymbol = NewSymbol("myMethod");
 
     vector<BackJump> inlinedLoops;
-    VMMethod* orig =
+    VMMethod const* const orig =
         Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
                             new LexicalScope(nullptr, {}, {}), inlinedLoops);
-    VMMethod* clone = orig->CloneForMovingGC();
+    VMMethod const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("numberOfLocals differs!!",
@@ -263,12 +263,12 @@ void CloneObjectsTest::testCloneMethod() {
 }
 
 void CloneObjectsTest::testCloneClass() {
-    VMClass* orig = Universe::NewClass(load_ptr(integerClass));
+    VMClass* const orig = Universe::NewClass(load_ptr(integerClass));
     orig->SetName(NewSymbol("MyClass"));
     orig->SetSuperClass(load_ptr(doubleClass));
     orig->SetInstanceFields(Universe::NewArray(2));
     orig->SetInstanceInvokables(Universe::NewArray(4));
-    VMClass* clone = orig->CloneForMovingGC();
+    VMClass const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("class differs!!", orig->clazz, clone->clazz);

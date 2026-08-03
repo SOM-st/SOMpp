@@ -5,7 +5,7 @@
 #include <cstring>
 #include <string>
 
-#include "../misc/defs.h"
+#include "../misc/defs.h"  // NOLINT(misc-include-cleaner)
 #include "../vm/Print.h"
 #include "../vmobjects/AbstractObject.h"
 #include "CopyingCollector.h"

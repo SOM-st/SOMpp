@@ -22,6 +22,7 @@ project(SOMpp LANGUAGES CXX)
 
 set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Make sure we have the SOM core-lib
 find_package(Git QUIET)
@@ -255,17 +256,107 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_link_libraries(unittests ${LIB_CPPUNIT})
 endif()
 
+find_program(CLANG_TIDY_EXE NAMES clang-tidy-22 clang-tidy-mp-22 clang-tidy)
+find_program(RUN_CLANG_TIDY_EXE NAMES run-clang-tidy-22 run-clang-tidy-mp-22 run-clang-tidy run-clang-tidy.py)
+if(CLANG_TIDY_EXE)
+  set(TIDY_SOURCE_FILES
+    ${MAIN_SRC}
+    ${COMPILER_SRC}
+    ${INTERPRETER_SRC}
+    ${MEMORY_SRC}
+    ${MISC_SRC}
+    ${VM_SRC}
+    ${VMOBJECTS_SRC}
+    ${PRIMITIVES_SRC}
+    ${PRIMITIVESCORE_SRC}
+    ${UNITTEST_SRC})
+
+  if(RUN_CLANG_TIDY_EXE)
+    add_custom_target(check-tidy
+      COMMAND ${RUN_CLANG_TIDY_EXE}
+        -clang-tidy-binary ${CLANG_TIDY_EXE}
+        -p ${CMAKE_BINARY_DIR}
+        ${TIDY_SOURCE_FILES}
+      WORKING_DIRECTORY ${ROOT_DIR}
+      COMMENT "Checking code with run-clang-tidy using compile_commands.json"
+      VERBATIM
+    )
+    find_program(CLANG_APPLY_REPLACEMENT_BINARY NAMES clang-apply-replacements-mp-22 clang-apply-replacements-22 clang-apply-replacements)
+    add_custom_target(tidy
+      COMMAND ${RUN_CLANG_TIDY_EXE}
+        -clang-tidy-binary ${CLANG_TIDY_EXE}
+        -clang-apply-replacements-binary ${CLANG_APPLY_REPLACEMENT_BINARY}
+        -p ${CMAKE_BINARY_DIR}
+        -fix
+        ${TIDY_SOURCE_FILES}
+      WORKING_DIRECTORY ${ROOT_DIR}
+      COMMENT "Run run-clang-tidy --fix, using compile_commands.json"
+      VERBATIM
+    )
+  else()
+    add_custom_target(check-tidy
+      COMMAND ${CLANG_TIDY_EXE}
+        -p=${CMAKE_BINARY_DIR}
+        --config-file=${ROOT_DIR}/.clang-tidy
+        ${TIDY_SOURCE_FILES}
+      WORKING_DIRECTORY ${ROOT_DIR}
+      COMMENT "Checking code with clang-tidy using compile_commands.json"
+      VERBATIM
+    )
+    add_custom_target(tidy
+      COMMAND ${CLANG_TIDY_EXE}
+        --fix
+        -p=${CMAKE_BINARY_DIR}
+        --config-file=${ROOT_DIR}/.clang-tidy
+        ${TIDY_SOURCE_FILES}
+      WORKING_DIRECTORY ${ROOT_DIR}
+      COMMENT "Run clang-tidy --fix, using compile_commands.json"
+      VERBATIM
+    )
+  endif()
+endif()
+
+find_program(CLANG_FORMAT_EXE NAMES clang-format-22 clang-format-mp-22 clang-format)
+if(CLANG_FORMAT_EXE)
+  add_custom_target(check-format
+      COMMAND ${CLANG_FORMAT_EXE} --dry-run --Werror -style=file ${SRC_DIR}/*.cpp ${SRC_DIR}/**/*.cpp ${SRC_DIR}/**/*.h
+      COMMENT "Checking code formatting with clang-format"
+  )
+  add_custom_target(format
+      COMMAND ${CLANG_FORMAT_EXE} -i --Werror -style=file ${SRC_DIR}/*.cpp ${SRC_DIR}/**/*.cpp ${SRC_DIR}/**/*.h
+      COMMENT "Format code with clang-format"
+  )
+endif()
+
 
 enable_testing()
 
 add_test(
   NAME    unittests
-  COMMAND unittests -cp ${ROOT_DIR}/Smalltalk ${ROOT_DIR}/Examples/Hello.som)
+  COMMAND unittests -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/TestSuite/BasicInterpreterTests ${ROOT_DIR}/Examples/Hello.som)
 
 add_test(
   NAME som-tests
   COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk ${ROOT_DIR}/TestSuite/TestHarness.som)
 
 add_test(
-  NAME benchmarks
-  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/LanguageFeatures ${ROOT_DIR}/Examples/Benchmarks/All.som)
+  NAME benchmark-richards
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/Richards ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som Richards 1 1)
+add_test(
+  NAME benchmark-deltablue
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/DeltaBlue ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som DeltaBlue 1 100)
+add_test(
+  NAME benchmark-nbody
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/NBody ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som NBody 1 1000)
+add_test(
+  NAME benchmark-json
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/Json ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som Json 1 1)
+add_test(
+  NAME benchmark-graphsearch
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/GraphSearch ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som GraphSearch 1 7)
+add_test(
+  NAME benchmark-pageranke
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk:${ROOT_DIR}/Examples/Benchmarks/PageRank ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som PageRank 1 7)
+add_test(
+  NAME benchmark-fannkuch
+  COMMAND SOM++ -cp ${ROOT_DIR}/Smalltalk ${ROOT_DIR}/Examples/Benchmarks/BenchmarkHarness.som Fannkuch 1 7)

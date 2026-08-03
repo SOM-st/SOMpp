@@ -66,7 +66,7 @@ public:
     }
 
     [[nodiscard]] inline vm_oop_t Capacity() {
-        VMArray* storage = load_ptr(this->storage);
+        VMArray const* storage = load_ptr(this->storage);
         return NEW_INT(storage->GetNumberOfIndexableFields());
     }
 

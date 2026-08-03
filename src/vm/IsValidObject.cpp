@@ -70,7 +70,7 @@ bool IsValidObject(vm_oop_t obj) {
         return false;
     }
 
-    void* vt = *(void**)obj;
+    void const* vt = *(void**)obj;
     bool b = vt == vt_array || vt == vt_block || vt == vt_class ||
              vt == vt_double || vt == vt_eval_primitive || vt == vt_frame ||
              vt == vt_integer || vt == vt_big_integer || vt == vt_method ||

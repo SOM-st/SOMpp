@@ -86,73 +86,73 @@ vm_oop_t Interpreter::Start() {
     method = GetMethod();
     currentBytecodes = GetBytecodes();
 
-    void* loopTargets[] = {&&LABEL_BC_HALT,
-                           &&LABEL_BC_DUP,
-                           &&LABEL_BC_DUP_SECOND,
-                           &&LABEL_BC_PUSH_LOCAL,
-                           &&LABEL_BC_PUSH_LOCAL_0,
-                           &&LABEL_BC_PUSH_LOCAL_1,
-                           &&LABEL_BC_PUSH_LOCAL_2,
-                           &&LABEL_BC_PUSH_ARGUMENT,
-                           &&LABEL_BC_PUSH_SELF,
-                           &&LABEL_BC_PUSH_ARG_1,
-                           &&LABEL_BC_PUSH_ARG_2,
-                           &&LABEL_BC_PUSH_FIELD,
-                           &&LABEL_BC_PUSH_FIELD_0,
-                           &&LABEL_BC_PUSH_FIELD_1,
-                           &&LABEL_BC_PUSH_BLOCK,
-                           &&LABEL_BC_PUSH_CONSTANT,
-                           &&LABEL_BC_PUSH_CONSTANT_0,
-                           &&LABEL_BC_PUSH_CONSTANT_1,
-                           &&LABEL_BC_PUSH_CONSTANT_2,
-                           &&LABEL_BC_PUSH_0,
-                           &&LABEL_BC_PUSH_1,
-                           &&LABEL_BC_PUSH_NIL,
-                           &&LABEL_BC_PUSH_GLOBAL,
-                           &&LABEL_BC_POP,
-                           &&LABEL_BC_POP_LOCAL,
-                           &&LABEL_BC_POP_LOCAL_0,
-                           &&LABEL_BC_POP_LOCAL_1,
-                           &&LABEL_BC_POP_LOCAL_2,
-                           &&LABEL_BC_POP_ARGUMENT,
-                           &&LABEL_BC_POP_FIELD,
-                           &&LABEL_BC_POP_FIELD_0,
-                           &&LABEL_BC_POP_FIELD_1,
-                           &&LABEL_BC_SEND,
-                           &&LABEL_BC_SEND_1,
-                           &&LABEL_BC_SUPER_SEND,
-                           &&LABEL_BC_RETURN_LOCAL,
-                           &&LABEL_BC_RETURN_NON_LOCAL,
-                           &&LABEL_BC_RETURN_SELF,
-                           &&LABEL_BC_RETURN_FIELD_0,
-                           &&LABEL_BC_RETURN_FIELD_1,
-                           &&LABEL_BC_RETURN_FIELD_2,
-                           &&LABEL_BC_INC,
-                           &&LABEL_BC_DEC,
-                           &&LABEL_BC_INC_FIELD,
-                           &&LABEL_BC_INC_FIELD_PUSH,
-                           &&LABEL_BC_JUMP,
-                           &&LABEL_BC_JUMP_ON_FALSE_POP,
-                           &&LABEL_BC_JUMP_ON_TRUE_POP,
-                           &&LABEL_BC_JUMP_ON_FALSE_TOP_NIL,
-                           &&LABEL_BC_JUMP_ON_TRUE_TOP_NIL,
-                           &&LABEL_BC_JUMP_ON_NOT_NIL_POP,
-                           &&LABEL_BC_JUMP_ON_NIL_POP,
-                           &&LABEL_BC_JUMP_ON_NOT_NIL_TOP_TOP,
-                           &&LABEL_BC_JUMP_ON_NIL_TOP_TOP,
-                           &&LABEL_BC_JUMP_IF_GREATER,
-                           &&LABEL_BC_JUMP_BACKWARD,
-                           &&LABEL_BC_JUMP2,
-                           &&LABEL_BC_JUMP2_ON_FALSE_POP,
-                           &&LABEL_BC_JUMP2_ON_TRUE_POP,
-                           &&LABEL_BC_JUMP2_ON_FALSE_TOP_NIL,
-                           &&LABEL_BC_JUMP2_ON_TRUE_TOP_NIL,
-                           &&LABEL_BC_JUMP2_ON_NOT_NIL_POP,
-                           &&LABEL_BC_JUMP2_ON_NIL_POP,
-                           &&LABEL_BC_JUMP2_ON_NOT_NIL_TOP_TOP,
-                           &&LABEL_BC_JUMP2_ON_NIL_TOP_TOP,
-                           &&LABEL_BC_JUMP2_IF_GREATER,
-                           &&LABEL_BC_JUMP2_BACKWARD};
+    void const* const loopTargets[] = {&&LABEL_BC_HALT,
+                                       &&LABEL_BC_DUP,
+                                       &&LABEL_BC_DUP_SECOND,
+                                       &&LABEL_BC_PUSH_LOCAL,
+                                       &&LABEL_BC_PUSH_LOCAL_0,
+                                       &&LABEL_BC_PUSH_LOCAL_1,
+                                       &&LABEL_BC_PUSH_LOCAL_2,
+                                       &&LABEL_BC_PUSH_ARGUMENT,
+                                       &&LABEL_BC_PUSH_SELF,
+                                       &&LABEL_BC_PUSH_ARG_1,
+                                       &&LABEL_BC_PUSH_ARG_2,
+                                       &&LABEL_BC_PUSH_FIELD,
+                                       &&LABEL_BC_PUSH_FIELD_0,
+                                       &&LABEL_BC_PUSH_FIELD_1,
+                                       &&LABEL_BC_PUSH_BLOCK,
+                                       &&LABEL_BC_PUSH_CONSTANT,
+                                       &&LABEL_BC_PUSH_CONSTANT_0,
+                                       &&LABEL_BC_PUSH_CONSTANT_1,
+                                       &&LABEL_BC_PUSH_CONSTANT_2,
+                                       &&LABEL_BC_PUSH_0,
+                                       &&LABEL_BC_PUSH_1,
+                                       &&LABEL_BC_PUSH_NIL,
+                                       &&LABEL_BC_PUSH_GLOBAL,
+                                       &&LABEL_BC_POP,
+                                       &&LABEL_BC_POP_LOCAL,
+                                       &&LABEL_BC_POP_LOCAL_0,
+                                       &&LABEL_BC_POP_LOCAL_1,
+                                       &&LABEL_BC_POP_LOCAL_2,
+                                       &&LABEL_BC_POP_ARGUMENT,
+                                       &&LABEL_BC_POP_FIELD,
+                                       &&LABEL_BC_POP_FIELD_0,
+                                       &&LABEL_BC_POP_FIELD_1,
+                                       &&LABEL_BC_SEND,
+                                       &&LABEL_BC_SEND_1,
+                                       &&LABEL_BC_SUPER_SEND,
+                                       &&LABEL_BC_RETURN_LOCAL,
+                                       &&LABEL_BC_RETURN_NON_LOCAL,
+                                       &&LABEL_BC_RETURN_SELF,
+                                       &&LABEL_BC_RETURN_FIELD_0,
+                                       &&LABEL_BC_RETURN_FIELD_1,
+                                       &&LABEL_BC_RETURN_FIELD_2,
+                                       &&LABEL_BC_INC,
+                                       &&LABEL_BC_DEC,
+                                       &&LABEL_BC_INC_FIELD,
+                                       &&LABEL_BC_INC_FIELD_PUSH,
+                                       &&LABEL_BC_JUMP,
+                                       &&LABEL_BC_JUMP_ON_FALSE_POP,
+                                       &&LABEL_BC_JUMP_ON_TRUE_POP,
+                                       &&LABEL_BC_JUMP_ON_FALSE_TOP_NIL,
+                                       &&LABEL_BC_JUMP_ON_TRUE_TOP_NIL,
+                                       &&LABEL_BC_JUMP_ON_NOT_NIL_POP,
+                                       &&LABEL_BC_JUMP_ON_NIL_POP,
+                                       &&LABEL_BC_JUMP_ON_NOT_NIL_TOP_TOP,
+                                       &&LABEL_BC_JUMP_ON_NIL_TOP_TOP,
+                                       &&LABEL_BC_JUMP_IF_GREATER,
+                                       &&LABEL_BC_JUMP_BACKWARD,
+                                       &&LABEL_BC_JUMP2,
+                                       &&LABEL_BC_JUMP2_ON_FALSE_POP,
+                                       &&LABEL_BC_JUMP2_ON_TRUE_POP,
+                                       &&LABEL_BC_JUMP2_ON_FALSE_TOP_NIL,
+                                       &&LABEL_BC_JUMP2_ON_TRUE_TOP_NIL,
+                                       &&LABEL_BC_JUMP2_ON_NOT_NIL_POP,
+                                       &&LABEL_BC_JUMP2_ON_NIL_POP,
+                                       &&LABEL_BC_JUMP2_ON_NOT_NIL_TOP_TOP,
+                                       &&LABEL_BC_JUMP2_ON_NIL_TOP_TOP,
+                                       &&LABEL_BC_JUMP2_IF_GREATER,
+                                       &&LABEL_BC_JUMP2_BACKWARD};
 
     goto* loopTargets[currentBytecodes[bytecodeIndexGlobal]];
 
@@ -703,7 +703,7 @@ void Interpreter::SetFrame(VMFrame* frm) {
 }
 
 vm_oop_t Interpreter::GetSelf() {
-    VMFrame* context = GetFrame()->GetOuterContext();
+    VMFrame const* const context = GetFrame()->GetOuterContext();
     return context->GetArgumentInCurrentContext(0);
 }
 
@@ -721,9 +721,9 @@ VMFrame* Interpreter::popFrame() {
 }
 
 void Interpreter::popFrameAndPushResult(vm_oop_t result) {
-    VMFrame* prevFrame = popFrame();
+    VMFrame const* const prevFrame = popFrame();
 
-    VMMethod* method = prevFrame->GetMethod();
+    VMMethod const* const method = prevFrame->GetMethod();
     uint8_t const numberOfArgs = method->GetNumberOfArguments();
 
     for (uint8_t i = 0; i < numberOfArgs; ++i) {
@@ -1008,9 +1008,9 @@ void Interpreter::doSuperSend(size_t bytecodeIndex) {
     auto* signature =
         static_cast<VMSymbol*>(method->GetConstant(bytecodeIndex));
 
-    VMFrame* ctxt = GetFrame()->GetOuterContext();
-    VMMethod* realMethod = ctxt->GetMethod();
-    VMClass* holder = realMethod->GetHolder();
+    VMFrame const* const ctxt = GetFrame()->GetOuterContext();
+    VMMethod const* const realMethod = ctxt->GetMethod();
+    VMClass const* const holder = realMethod->GetHolder();
     assert(holder->HasSuperClass());
     auto* super = (VMClass*)holder->GetSuperClass();
     auto* invokable = super->LookupInvokable(signature);
@@ -1040,20 +1040,20 @@ void Interpreter::doReturnLocal() {
 void Interpreter::doReturnNonLocal() {
     vm_oop_t result = GetFrame()->Pop();
 
-    VMFrame* context = GetFrame()->GetOuterContext();
+    VMFrame const* const context = GetFrame()->GetOuterContext();
 
     if (!context->HasPreviousFrame()) {
         auto* block =
             static_cast<VMBlock*>(GetFrame()->GetArgumentInCurrentContext(0));
-        VMFrame* prevFrame = GetFrame()->GetPreviousFrame();
-        VMFrame* outerContext = prevFrame->GetOuterContext();
+        VMFrame* const prevFrame = GetFrame()->GetPreviousFrame();
+        VMFrame const* const outerContext = prevFrame->GetOuterContext();
         vm_oop_t sender = outerContext->GetArgumentInCurrentContext(0);
         vm_oop_t arguments[] = {block};
 
         popFrame();
 
         // Pop old arguments from stack
-        VMMethod* method = GetFrame()->GetMethod();
+        VMMethod const* const method = GetFrame()->GetMethod();
         uint8_t const numberOfArgs = method->GetNumberOfArguments();
         for (uint8_t i = 0; i < numberOfArgs; ++i) {
             GetFrame()->Pop();

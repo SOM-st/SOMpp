@@ -293,7 +293,7 @@ static vm_oop_t intAnd(vm_oop_t leftObj, vm_oop_t rightObj) {
     }
 
     if (IS_BIG_INT(leftObj) && IS_SMALL_INT(rightObj)) {
-        VMBigInteger* left = AS_BIG_INT(leftObj);
+        VMBigInteger const* const left = AS_BIG_INT(leftObj);
         int64_t const l = left->embeddedInteger.truncateToInt64();
         // NOLINTNEXTLINE(hicpp-signed-bitwise)
         return NEW_INT(l & SMALL_INT_VAL(rightObj));
@@ -362,7 +362,7 @@ inline static bool lowerThan(vm_oop_t leftObj, vm_oop_t rightObj) {
     }
 
     assert(IS_BIG_INT(leftObj) && "assume big int");
-    VMBigInteger* left = AS_BIG_INT(leftObj);
+    VMBigInteger const* const left = AS_BIG_INT(leftObj);
 
     if (IS_SMALL_INT(rightObj)) {
         return left->embeddedInteger < InfInt(SMALL_INT_VAL(rightObj));
@@ -405,7 +405,7 @@ static vm_oop_t intLowerThanEqual(vm_oop_t leftObj, vm_oop_t rightObj) {
     }
 
     assert(IS_BIG_INT(leftObj) && "assume big int");
-    VMBigInteger* left = AS_BIG_INT(leftObj);
+    VMBigInteger const* const left = AS_BIG_INT(leftObj);
 
     if (IS_SMALL_INT(rightObj)) {
         return (left->embeddedInteger <= InfInt(SMALL_INT_VAL(rightObj)))
@@ -447,7 +447,7 @@ static vm_oop_t intGreaterThan(vm_oop_t leftObj, vm_oop_t rightObj) {
     }
 
     assert(IS_BIG_INT(leftObj) && "assume big int");
-    VMBigInteger* left = AS_BIG_INT(leftObj);
+    VMBigInteger const* const left = AS_BIG_INT(leftObj);
 
     if (IS_SMALL_INT(rightObj)) {
         return (left->embeddedInteger > InfInt(SMALL_INT_VAL(rightObj)))
@@ -489,7 +489,7 @@ static vm_oop_t intGreaterThanEqual(vm_oop_t leftObj, vm_oop_t rightObj) {
     }
 
     assert(IS_BIG_INT(leftObj) && "assume big int");
-    VMBigInteger* left = AS_BIG_INT(leftObj);
+    VMBigInteger const* const left = AS_BIG_INT(leftObj);
 
     if (IS_SMALL_INT(rightObj)) {
         return (left->embeddedInteger >= InfInt(SMALL_INT_VAL(rightObj)))
@@ -566,7 +566,7 @@ static vm_oop_t intSqrt(vm_oop_t self) {
 static vm_oop_t intAtRandom(vm_oop_t self) {
     int64_t const result =
         SMALL_INT_VAL(self) *
-        rand();  // NOLINT(clang-analyzer-security.insecureAPI.rand)
+        rand();  // NOLINT(clang-analyzer-security.insecureAPI.rand,misc-predictable-rand)
     return NEW_INT(result);
 }
 
@@ -624,7 +624,7 @@ static vm_oop_t intUnequal(vm_oop_t leftObj, vm_oop_t rightObj) {
     }
 
     assert(IS_BIG_INT(leftObj) && "assume big int");
-    VMBigInteger* left = AS_BIG_INT(leftObj);
+    VMBigInteger const* const left = AS_BIG_INT(leftObj);
 
     if (IS_SMALL_INT(rightObj)) {
         return (left->embeddedInteger != InfInt(SMALL_INT_VAL(rightObj)))
@@ -662,7 +662,7 @@ static vm_oop_t intRange(vm_oop_t leftObj, vm_oop_t rightObj) {
 }
 
 _Integer::_Integer() {
-    srand((unsigned)time(nullptr));
+    srand((unsigned)time(nullptr));  // NOLINT(bugprone-random-generator-seed)
 
     Add("+", &intPlus, false);
     Add("-", &intMinus, false);
