@@ -127,6 +127,11 @@ public:
 
     bool LastBytecodeIs(size_t indexFromEnd, uint8_t bytecode);
 
+#ifdef FRAME_OPTIMIZATION
+
+    void SetRequiresClosureContext() { requiresClosureContext = true; }
+#endif
+
 private:
     VMTrivialMethod* assembleTrivialMethod();
     VMTrivialMethod* assembleLiteralReturn(uint8_t pushCandidate);
@@ -185,6 +190,10 @@ private:
     std::vector<BackJump> inlinedLoops;
 
     bool isCurrentlyInliningABlock{false};
+
+#ifdef FRAME_OPTIMIZATION
+    bool requiresClosureContext{false};
+#endif
 
     make_testable(public);
     vm_oop_t GetLiteral(size_t idx) { return literals.at(idx); }

@@ -109,7 +109,7 @@ jobs:
               "BYTECODE_HEATMAP"
               "GENERATE_ALLOCATION_STATISTICS"
               "LOG_RECEIVER_TYPES"
-              "UNSAFE_FRAME_OPTIMIZATION"
+              "FRAME_OPTIMIZATION"
               "ADDITIONAL_ALLOCATION"
           )
 

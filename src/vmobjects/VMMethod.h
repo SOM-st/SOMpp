@@ -142,9 +142,15 @@ public:
 
     inline void SetBytecode(size_t indx, uint8_t val) { bytecodes[indx] = val; }
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     void SetCachedFrame(VMFrame* frame);
     GCFrame* GetCachedFrame() const;
+
+    void SetRequiresClosureContext() { requiresClosureContext = true; }
+
+    [[nodiscard]] bool RequiresClosureContext() const override {
+        return requiresClosureContext;
+    }
 #endif
 
     void WalkObjects(walk_heap_fn /*unused*/) override;
@@ -218,8 +224,9 @@ private:
     LexicalScope* lexicalScope;
     BackJump* inlinedLoops;
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     GCFrame* cachedFrame;
+    bool requiresClosureContext{false};
 #endif
 
 #ifdef BYTECODE_HEATMAP

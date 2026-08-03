@@ -86,6 +86,12 @@ VMInvokable* MethodGenerationContext::Assemble() {
         meth->SetBytecode(i, bytecode[i]);
     }
 
+#ifdef FRAME_OPTIMIZATION
+    if (requiresClosureContext) {
+        meth->SetRequiresClosureContext();
+    }
+#endif
+
     // return the method - the holder field is to be set later on!
     return meth;
 }
@@ -333,7 +339,14 @@ bool MethodGenerationContext::FindVar(std::string& var, int64_t* index,
             }
 
             (*context)++;
-            return outerGenc->FindVar(var, index, context, isArgument);
+            bool const found =
+                outerGenc->FindVar(var, index, context, isArgument);
+#ifdef FRAME_OPTIMIZATION
+            if (found) {
+                SetRequiresClosureContext();
+            }
+#endif
+            return found;
         }
         *isArgument = true;
     }
