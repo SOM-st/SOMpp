@@ -128,6 +128,14 @@ make check-tidy
 make check-format
 ```
 
+To run the format and fix tidy issues, we have:
+
+```bash
+make tidy
+make format
+```
+
+
 Build Status
 ------------
 
