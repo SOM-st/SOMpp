@@ -1,6 +1,18 @@
+// A mark-and-sweep garbage collector. When memory runs low it finds every
+// object the program can still reach ("mark"), and treats everything else as
+// garbage whose memory can be reused ("sweep"). Objects are never moved.
+//
+// Marking starts from the roots - the globals and the interpreter's stack
+// and follows references outward until the whole set of reachable objects has
+// been visited.
+//
+// Sweeping is lazy. A collection itself only marks, which keeps the process
+// pause short; reclaiming dead objects happens as the the program allocates.
+// Reclaimed memory is recycled for new objects of the same size.
 #include "MarkSweepCollector.h"
 
 #include <cstddef>
+#include <utility>
 #include <vector>
 
 #include "../memory/Heap.h"
@@ -12,48 +24,63 @@
 #include "../vmobjects/VMFrame.h"
 #include "MarkSweepHeap.h"
 
-#define GC_MARKED 3456
+// File scope so the static mark callback can reach them; the worklist is reused
+// across collections.
+static size_t s_epoch = 0;
+static size_t s_markedBytes = 0;
+static std::vector<AbstractVMObject*> s_markStack;
 
 void MarkSweepCollector::Collect() {
     DebugLog("MarkSweep Collect\n");
 
     auto* heap = GetHeap<MarkSweepHeap>();
     Timer::GCTimer.Resume();
-    // reset collection trigger
     heap->resetGCTrigger();
 
-    // now mark all reachables
-    markReachableObjects();
+    // New cycle. The epoch only increases, so a survivor marked in an older
+    // cycle is never mistaken for live now -- no mark reset needed.
+    heap->epoch++;
+    s_epoch = heap->epoch;
+    s_markedBytes = 0;
 
-    // in this survivors stack we will remember all objects that survived
-    auto* survivors = new vector<AbstractVMObject*>();
-    size_t survivorsSize = 0;
-
-    vector<AbstractVMObject*>::iterator iter;
-    for (iter = heap->allocatedObjects->begin();
-         iter != heap->allocatedObjects->end();
-         iter++) {
-        if ((*iter)->GetGCField() == GC_MARKED) {
-            // object ist marked -> let it survive
-            survivors->push_back(*iter);
-            survivorsSize += (*iter)->GetObjectSize();
-            (*iter)->SetGCField(0);
-        } else {
-            // not marked -> kill it
-            heap->FreeObject(*iter);
-        }
+    // Drop all free lists (re-harvested by sweeping). This is what guarantees
+    // no allocation into a not-yet-swept page, so any cell without the current
+    // epoch found while sweeping is reclaimable.
+    for (auto& list : heap->freeLists) {
+        list = nullptr;
+    }
+    for (auto& cursor : heap->sweepCursor) {
+        cursor = 0;
     }
 
-    delete heap->allocatedObjects;
-    heap->allocatedObjects = survivors;
+    markReachableObjects();
 
-    heap->spcAlloc = survivorsSize;
-    // TODO(smarr): Maybe choose another constant to calculate new
-    // collectionLimit here
-    heap->collectionLimit = 2 * survivorsSize;
+    // Sweep the large-object space eagerly (few objects, so cheap).
+    std::vector<AbstractVMObject*> survivingLarge;
+    for (auto* obj : heap->largeObjects) {
+        if (obj->GetGCField() == heap->epoch) {
+            survivingLarge.push_back(obj);
+        } else {
+            heap->FreeObject(obj);
+        }
+    }
+    heap->largeObjects = std::move(survivingLarge);
+
+    // Small dead objects (and empty pages) are reclaimed lazily during
+    // allocation, not here, keeping this pause to just the mark phase.
+
+    heap->spcAlloc = s_markedBytes;
+    // Collect again after allocating ~max(live, a heap's worth). The floor
+    // makes the heap size (-H / objectSpaceSize) actually govern GC frequency,
+    // like the copying collector, instead of collecting every ~live bytes.
+    size_t const grown = 2 * s_markedBytes;
+    heap->collectionLimit =
+        grown > heap->minCollectionLimit ? grown : heap->minCollectionLimit;
     Timer::GCTimer.Halt();
 }
 
+// Marks an object with the current epoch and queues it. Iterative (worklist),
+// not recursive, so deep object graphs can't overflow the native stack.
 static gc_oop_t mark_object(gc_oop_t oop) {
     if (IS_TAGGED(oop)) {
         return oop;
@@ -61,16 +88,23 @@ static gc_oop_t mark_object(gc_oop_t oop) {
 
     AbstractVMObject* obj = AS_OBJ(oop);
 
-    if (obj->GetGCField() != 0) {
+    if (obj->GetGCField() == s_epoch) {
         return oop;
     }
 
-    obj->SetGCField(GC_MARKED);
-    obj->WalkObjects(mark_object);
+    obj->SetGCField(s_epoch);
+    s_markedBytes += obj->GetObjectSize();
+    s_markStack.push_back(obj);
     return oop;
 }
 
 void MarkSweepCollector::markReachableObjects() {
-    // This walks the globals of the universe, and the interpreter
+    s_markStack.clear();
     Universe::WalkGlobals(mark_object);
+
+    while (!s_markStack.empty()) {
+        AbstractVMObject* obj = s_markStack.back();
+        s_markStack.pop_back();
+        obj->WalkObjects(mark_object);
+    }
 }
