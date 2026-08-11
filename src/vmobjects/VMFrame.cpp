@@ -103,7 +103,6 @@ VMFrame* VMFrame::CloneForMovingGC() const {
 
 #if GC_TYPE == GENERATIONAL || GC_TYPE == COPYING || GC_TYPE == DEBUG_COPYING
     VMMethod const* meth = load_ptr(method);
-    //if (meth->GetGCField() != 0 && meth->GetGCField() != MASK_OBJECT_IS_OLD) {
     size_t const gc_field_val = meth->GetGCField();
     if (gc_field_val != 0 &&
         (gc_field_val >
