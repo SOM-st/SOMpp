@@ -64,10 +64,6 @@ VMMethod::VMMethod(VMSymbol* signature, size_t bcCount,
                             : Signature::GetNumberOfArguments(signature)),
       numberOfConstants(numberOfConstants), lexicalScope(lexicalScope),
       inlinedLoops(inlinedLoops) {
-#ifdef FRAME_OPTIMIZATION
-    cachedFrame = nullptr;
-#endif
-
     indexableFields = (gc_oop_t*)(&indexableFields + 2);
     for (size_t i = 0; i < numberOfConstants; ++i) {
         indexableFields[i] = nilObject;

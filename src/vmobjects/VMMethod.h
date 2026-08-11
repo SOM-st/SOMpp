@@ -144,7 +144,7 @@ public:
 
 #ifdef FRAME_OPTIMIZATION
     void SetCachedFrame(VMFrame* frame);
-    GCFrame* GetCachedFrame() const;
+    [[nodiscard]] GCFrame* GetCachedFrame() const;
 
     void SetRequiresClosureContext() { requiresClosureContext = true; }
 
@@ -225,7 +225,7 @@ private:
     BackJump* inlinedLoops;
 
 #ifdef FRAME_OPTIMIZATION
-    GCFrame* cachedFrame;
+    GCFrame* cachedFrame{nullptr};
     bool requiresClosureContext{false};
 #endif
 
