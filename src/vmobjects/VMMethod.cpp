@@ -123,7 +123,7 @@ void VMMethod::SetCachedFrame(VMFrame* frame) {
         frame->SetContext(nullptr);
         frame->SetBytecodeIndex(0);
         frame->ResetStackPointer();
-        write_barrier(this, cachedFrame);
+        write_barrier(this, frame);
     }
 }
 #endif
