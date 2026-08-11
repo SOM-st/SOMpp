@@ -106,18 +106,18 @@ jobs:
       - name: Try building all variants
         run: |
           build_options=(
-              "BYTECODE_HEATMAP"
-              "GENERATE_ALLOCATION_STATISTICS"
-              "LOG_RECEIVER_TYPES"
-              "FRAME_OPTIMIZATION"
-              "ADDITIONAL_ALLOCATION"
+              "BYTECODE_HEATMAP=true"
+              "GENERATE_ALLOCATION_STATISTICS=true"
+              "LOG_RECEIVER_TYPES=true"
+              "FRAME_OPTIMIZATION=false"
+              "ADDITIONAL_ALLOCATION=true"
           )
 
           for opt in "${build_options[@]}"; do
               echo "Processing: $opt"
               mkdir cmake-build && cd cmake-build
-              echo cmake .. -D$opt=true
-              cmake .. -D$opt=true
+              echo cmake .. -D$opt
+              cmake .. -D$opt
               make -j5
               cd ..
               rm -Rf cmake-build
