@@ -276,6 +276,7 @@ if(CLANG_TIDY_EXE)
       COMMAND ${RUN_CLANG_TIDY_EXE}
         -clang-tidy-binary ${CLANG_TIDY_EXE}
         -p ${CMAKE_BINARY_DIR}
+        -quiet
         ${TIDY_SOURCE_FILES}
       WORKING_DIRECTORY ${ROOT_DIR}
       COMMENT "Checking code with run-clang-tidy using compile_commands.json"
@@ -288,6 +289,7 @@ if(CLANG_TIDY_EXE)
         -clang-apply-replacements-binary ${CLANG_APPLY_REPLACEMENT_BINARY}
         -p ${CMAKE_BINARY_DIR}
         -fix
+        -quiet
         ${TIDY_SOURCE_FILES}
       WORKING_DIRECTORY ${ROOT_DIR}
       COMMENT "Run run-clang-tidy --fix, using compile_commands.json"
