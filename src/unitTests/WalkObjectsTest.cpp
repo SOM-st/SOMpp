@@ -149,9 +149,9 @@ void WalkObjectsTest::testWalkFrame() {
     VMSymbol* methodSymbol = NewSymbol("frameMethod");
 
     vector<BackJump> inlinedLoops;
-    VMMethod* method =
-        Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
-                            new LexicalScope(nullptr, {}, {}), inlinedLoops, false);
+    VMMethod* method = Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
+                                           new LexicalScope(nullptr, {}, {}),
+                                           inlinedLoops, false);
 
     VMFrame* prev = Universe::NewFrame(nullptr, method);
     VMFrame* frame = Universe::NewFrame(prev, method);
@@ -203,8 +203,8 @@ void WalkObjectsTest::testWalkMethod() {
     VMSymbol* methodSymbol = NewSymbol("myMethod");
 
     vector<BackJump> inlinedLoops;
-    VMMethod* method =
-        Universe::NewMethod(methodSymbol, 0, 0, 0, 0, scope, inlinedLoops, false);
+    VMMethod* method = Universe::NewMethod(methodSymbol, 0, 0, 0, 0, scope,
+                                           inlinedLoops, false);
 
     method->SetHolder(load_ptr(symbolClass));
     method->WalkObjects(collectMembers);
@@ -222,9 +222,9 @@ void WalkObjectsTest::testWalkBlock() {
     VMSymbol* methodSymbol = NewSymbol("someMethod");
 
     vector<BackJump> inlinedLoops;
-    VMMethod* method =
-        Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
-                            new LexicalScope(nullptr, {}, {}), inlinedLoops, false);
+    VMMethod* method = Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
+                                           new LexicalScope(nullptr, {}, {}),
+                                           inlinedLoops, false);
 
     VMBlock* block = Universe::NewBlock(method, Interpreter::GetFrame(),
                                         method->GetNumberOfArguments());
