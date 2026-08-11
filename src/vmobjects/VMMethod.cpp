@@ -113,13 +113,16 @@ void VMMethod::WalkObjects(walk_heap_fn walk) {
 }
 
 #ifdef FRAME_OPTIMIZATION
-GCFrame* VMMethod::GetCachedFrame() const {
-    return cachedFrame;
+VMFrame* VMMethod::UseCachedFrame() {
+    VMFrame* frame = load_ptr(cachedFrame);
+    cachedFrame = nullptr;
+    return frame;
 }
 
-void VMMethod::SetCachedFrame(VMFrame* frame) {
+void VMMethod::CacheFrame(VMFrame* frame) {
     cachedFrame = store_with_separate_barrier(frame);
     if (frame != nullptr) {
+        assert(frame->previousFrame == nullptr);
         frame->SetContext(nullptr);
         frame->SetBytecodeIndex(0);
         frame->ResetStackPointer();

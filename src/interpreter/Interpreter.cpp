@@ -716,7 +716,7 @@ VMFrame* Interpreter::popFrame() {
 #ifdef FRAME_OPTIMIZATION
     // remember this frame as free frame
     if (!result->GetMethod()->RequiresClosureContext()) {
-        result->GetMethod()->SetCachedFrame(result);
+        result->GetMethod()->CacheFrame(result);
     }
 #endif
     return result;

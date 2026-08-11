@@ -825,9 +825,8 @@ VMDouble* Universe::NewDouble(double value) {
 VMFrame* Universe::NewFrame(VMFrame* previousFrame, VMMethod* method) {
     VMFrame* result = nullptr;
 #ifdef FRAME_OPTIMIZATION
-    result = load_ptr(method->GetCachedFrame());
+    result = method->UseCachedFrame();
     if (result != nullptr) {
-        method->SetCachedFrame(nullptr);
         result->SetPreviousFrameOnReuse(previousFrame);
         return result;
     }

@@ -143,8 +143,8 @@ public:
     inline void SetBytecode(size_t indx, uint8_t val) { bytecodes[indx] = val; }
 
 #ifdef FRAME_OPTIMIZATION
-    void SetCachedFrame(VMFrame* frame);
-    [[nodiscard]] GCFrame* GetCachedFrame() const;
+    void CacheFrame(VMFrame* frame);
+    [[nodiscard]] VMFrame* UseCachedFrame();
 
     void SetRequiresClosureContext() { requiresClosureContext = true; }
 
