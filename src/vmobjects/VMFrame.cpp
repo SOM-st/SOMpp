@@ -103,8 +103,9 @@ VMFrame* VMFrame::CloneForMovingGC() const {
 
 #if GC_TYPE == GENERATIONAL || GC_TYPE == COPYING || GC_TYPE == DEBUG_COPYING
     VMMethod const* meth = load_ptr(method);
-    if (meth->GetGCField() != 0 && meth->GetGCField() != MASK_OBJECT_IS_OLD) {
-        meth = (VMMethod*)meth->GetGCField();
+    size_t gc_field_val = meth->GetGCField();
+    if (gc_field_val != 0 && (gc_field_val > MASK_BITS_ALL)) { // this means it's a forwarding pointer
+        meth = reinterpret_cast<VMMethod*>(meth->GetGCField());
     }
 //    int64_t numArgs =
 //    meth->GetNumberOfArgumentsPossiblyFollowingForwardingPointer();
