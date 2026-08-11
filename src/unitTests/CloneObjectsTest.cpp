@@ -147,9 +147,9 @@ void CloneObjectsTest::testCloneBlock() {
     VMSymbol* methodSymbol = NewSymbol("someMethod");
 
     vector<BackJump> inlinedLoops;
-    VMMethod* method =
-        Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
-                            new LexicalScope(nullptr, {}, {}), inlinedLoops, false);
+    VMMethod* method = Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
+                                           new LexicalScope(nullptr, {}, {}),
+                                           inlinedLoops, false);
     VMBlock const* const orig = Universe::NewBlock(
         method, Interpreter::GetFrame(), method->GetNumberOfArguments());
     VMBlock const* const clone = orig->CloneForMovingGC();
@@ -203,9 +203,9 @@ void CloneObjectsTest::testCloneFrame() {
     VMSymbol* methodSymbol = NewSymbol("frameMethod");
 
     vector<BackJump> inlinedLoops;
-    VMMethod* method =
-        Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
-                            new LexicalScope(nullptr, {}, {}), inlinedLoops, false);
+    VMMethod* method = Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
+                                           new LexicalScope(nullptr, {}, {}),
+                                           inlinedLoops, false);
 
     VMFrame* orig = Universe::NewFrame(nullptr, method);
     VMFrame* context = orig->CloneForMovingGC();
@@ -234,9 +234,9 @@ void CloneObjectsTest::testCloneMethod() {
     VMSymbol* methodSymbol = NewSymbol("myMethod");
 
     vector<BackJump> inlinedLoops;
-    VMMethod const* const orig =
-        Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
-                            new LexicalScope(nullptr, {}, {}), inlinedLoops, false);
+    VMMethod const* const orig = Universe::NewMethod(
+        methodSymbol, 0, 0, 0, 0, new LexicalScope(nullptr, {}, {}),
+        inlinedLoops, false);
     VMMethod const* const clone = orig->CloneForMovingGC();
 
     CPPUNIT_ASSERT((intptr_t)orig != (intptr_t)clone);
