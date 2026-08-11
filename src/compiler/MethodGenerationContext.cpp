@@ -335,11 +335,9 @@ bool MethodGenerationContext::FindVar(std::string& var, int64_t* index,
             (*context)++;
             bool const found =
                 outerGenc->FindVar(var, index, context, isArgument);
-#ifdef FRAME_OPTIMIZATION
             if (found) {
                 SetRequiresClosureContext();
             }
-#endif
             return found;
         }
         *isArgument = true;
