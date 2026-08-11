@@ -106,6 +106,7 @@ VMFrame* VMFrame::CloneForMovingGC() const {
     //if (meth->GetGCField() != 0 && meth->GetGCField() != MASK_OBJECT_IS_OLD) {
     size_t const gc_field_val = meth->GetGCField();
     if (gc_field_val != 0 && (gc_field_val > MASK_BITS_ALL)) { // this means it's a forwarding pointer
+        // NOLINTNEXTLINE (cppcoreguidelines-pro-type-reinterpret-cast)
         meth = reinterpret_cast<VMMethod*>(meth->GetGCField());
     }
 //    int64_t numArgs =
