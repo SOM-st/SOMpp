@@ -134,6 +134,13 @@ typedef DebugCopyingHeap HEAP_CLS;
 #endif
 
 //
+// Frame Optimizations
+//
+#ifndef FRAME_OPTIMIZATION
+  #define FRAME_OPTIMIZATION true
+#endif
+
+//
 // Debugging
 //
 #ifdef DEBUG
