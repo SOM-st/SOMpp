@@ -968,7 +968,8 @@ void Universe::WalkGlobals(walk_heap_fn walk) {
 VMMethod* Universe::NewMethod(VMSymbol* signature, size_t numberOfBytecodes,
                               size_t numberOfConstants, size_t numLocals,
                               size_t maxStackDepth, LexicalScope* lexicalScope,
-                              vector<BackJump>& inlinedLoops, bool requiresClosureContext) {
+                              vector<BackJump>& inlinedLoops,
+                              bool requiresClosureContext) {
     assert(lexicalScope != nullptr &&
            "A method is expected to have a lexical scope");
 
@@ -989,9 +990,9 @@ VMMethod* Universe::NewMethod(VMSymbol* signature, size_t numberOfBytecodes,
     // method needs space for the bytecodes and the pointers to the constants
     size_t const additionalBytes = PADDED_SIZE(
         numberOfBytecodes + (numberOfConstants * sizeof(VMObject*)));
-    auto* result = new (GetHeap<HEAP_CLS>(), additionalBytes)
-        VMMethod(signature, numberOfBytecodes, numberOfConstants, numLocals,
-                 maxStackDepth, lexicalScope, inlinedLoopsArr, requiresClosureContext);
+    auto* result = new (GetHeap<HEAP_CLS>(), additionalBytes) VMMethod(
+        signature, numberOfBytecodes, numberOfConstants, numLocals,
+        maxStackDepth, lexicalScope, inlinedLoopsArr, requiresClosureContext);
 
     LOG_ALLOCATION("VMMethod", result->GetObjectSize());
     return result;
