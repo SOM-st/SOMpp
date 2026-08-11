@@ -70,9 +70,9 @@ VMInvokable* MethodGenerationContext::Assemble() {
     // create a method instance with the given number of bytecodes and literals
     size_t const numLiterals = literals.size();
     size_t const numLocals = locals.size();
-    VMMethod* meth =
-        Universe::NewMethod(signature, bytecode.size(), numLiterals, numLocals,
-                            maxStackDepth, lexicalScope, inlinedLoops, requiresClosureContext);
+    VMMethod* meth = Universe::NewMethod(
+        signature, bytecode.size(), numLiterals, numLocals, maxStackDepth,
+        lexicalScope, inlinedLoops, requiresClosureContext);
 
     // copy literals into the method
     for (size_t i = 0; i < numLiterals; i++) {
