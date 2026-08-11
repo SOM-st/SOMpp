@@ -56,14 +56,14 @@
 VMMethod::VMMethod(VMSymbol* signature, size_t bcCount,
                    size_t numberOfConstants, size_t numLocals,
                    size_t maxStackDepth, LexicalScope* lexicalScope,
-                   BackJump* inlinedLoops)
+                   BackJump* inlinedLoops, bool requiresContext)
     : VMInvokable(signature), numberOfLocals(numLocals),
       maximumNumberOfStackElements(maxStackDepth), bcLength(bcCount),
       numberOfArguments(signature == nullptr
                             ? 0
                             : Signature::GetNumberOfArguments(signature)),
       numberOfConstants(numberOfConstants), lexicalScope(lexicalScope),
-      inlinedLoops(inlinedLoops) {
+      inlinedLoops(inlinedLoops), requiresClosureContext(requiresContext) {
     indexableFields = (gc_oop_t*)(&indexableFields + 2);
     for (size_t i = 0; i < numberOfConstants; ++i) {
         indexableFields[i] = nilObject;

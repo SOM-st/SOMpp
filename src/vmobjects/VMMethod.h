@@ -94,7 +94,7 @@ public:
 
     VMMethod(VMSymbol* signature, size_t bcCount, size_t numberOfConstants,
              size_t numLocals, size_t maxStackDepth, LexicalScope* lexicalScope,
-             BackJump* inlinedLoops);
+             BackJump* inlinedLoops, bool requiresContext);
 
     ~VMMethod() override { delete lexicalScope; }
 
@@ -145,8 +145,6 @@ public:
 #ifdef FRAME_OPTIMIZATION
     void CacheFrame(VMFrame* frame);
     [[nodiscard]] VMFrame* UseCachedFrame();
-
-    void SetRequiresClosureContext() { requiresClosureContext = true; }
 
     [[nodiscard]] bool RequiresClosureContext() const override {
         return requiresClosureContext;
@@ -226,8 +224,9 @@ private:
 
 #ifdef FRAME_OPTIMIZATION
     GCFrame* cachedFrame{nullptr};
-    bool requiresClosureContext{false};
 #endif
+
+    bool requiresClosureContext;
 
 #ifdef BYTECODE_HEATMAP
     uint64_t* heatmap;

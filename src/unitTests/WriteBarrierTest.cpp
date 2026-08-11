@@ -82,7 +82,7 @@ void WriteBarrierTest::testWriteBlock() {
     vector<BackJump> inlinedLoops;
     VMMethod* method =
         Universe::NewMethod(methodSymbol, 0, 0, 0, 0,
-                            new LexicalScope(nullptr, {}, {}), inlinedLoops);
+                            new LexicalScope(nullptr, {}, {}), inlinedLoops, false);
 
     VMBlock* block = Universe::NewBlock(method, Interpreter::GetFrame(),
                                         method->GetNumberOfArguments());

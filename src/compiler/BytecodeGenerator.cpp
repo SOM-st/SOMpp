@@ -164,11 +164,9 @@ void EmitPUSHBLOCK(MethodGenerationContext& mgenc, const Parser& parser,
                    VMInvokable* block) {
     const uint8_t idx = mgenc.AddLiteralIfAbsent(block, parser);
     Emit2(mgenc, BC_PUSH_BLOCK, idx, 1);
-#ifdef FRAME_OPTIMIZATION
     if (block->RequiresClosureContext()) {
         mgenc.SetRequiresClosureContext();
     }
-#endif
 }
 
 void EmitPUSHCONSTANT(MethodGenerationContext& mgenc, const Parser& parser,
@@ -351,9 +349,7 @@ void EmitRETURNLOCAL(MethodGenerationContext& mgenc, const Parser& parser) {
 
 void EmitRETURNNONLOCAL(MethodGenerationContext& mgenc) {
     Emit1(mgenc, BC_RETURN_NON_LOCAL, 0);
-#ifdef FRAME_OPTIMIZATION
     mgenc.SetRequiresClosureContext();
-#endif
 }
 
 void EmitRETURNFIELD(MethodGenerationContext& mgenc, const Parser& parser,
@@ -461,10 +457,9 @@ size_t Emit3WithDummy(MethodGenerationContext& mgenc, uint8_t bytecode,
 }
 
 void EmitPushFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
-#ifdef FRAME_OPTIMIZATION
+    // ctxLevel would be always >= 0
     mgenc.SetRequiresClosureContext();
-#endif
-    // if (ctxLevel == 0) {
+
     if (fieldIdx == 0) {
         Emit1(mgenc, BC_PUSH_FIELD_0, 1);
         return;
@@ -474,16 +469,14 @@ void EmitPushFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
         Emit1(mgenc, BC_PUSH_FIELD_1, 1);
         return;
     }
-    // }
 
     Emit2(mgenc, BC_PUSH_FIELD, fieldIdx, 1);
 }
 
 void EmitPopFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
-#ifdef FRAME_OPTIMIZATION
+    // ctxLevel would be always >= 0
     mgenc.SetRequiresClosureContext();
-#endif
-    // if (ctxLevel == 0) {
+
     if (fieldIdx == 0) {
         Emit1(mgenc, BC_POP_FIELD_0, -1);
         return;
@@ -493,7 +486,6 @@ void EmitPopFieldWithIndex(MethodGenerationContext& mgenc, uint8_t fieldIdx) {
         Emit1(mgenc, BC_POP_FIELD_1, -1);
         return;
     }
-    // }
 
     Emit2(mgenc, BC_POP_FIELD, fieldIdx, -1);
 }

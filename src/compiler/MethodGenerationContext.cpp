@@ -72,7 +72,7 @@ VMInvokable* MethodGenerationContext::Assemble() {
     size_t const numLocals = locals.size();
     VMMethod* meth =
         Universe::NewMethod(signature, bytecode.size(), numLiterals, numLocals,
-                            maxStackDepth, lexicalScope, inlinedLoops);
+                            maxStackDepth, lexicalScope, inlinedLoops, requiresClosureContext);
 
     // copy literals into the method
     for (size_t i = 0; i < numLiterals; i++) {
@@ -85,12 +85,6 @@ VMInvokable* MethodGenerationContext::Assemble() {
     for (size_t i = 0; i < bc_size; i++) {
         meth->SetBytecode(i, bytecode[i]);
     }
-
-#ifdef FRAME_OPTIMIZATION
-    if (requiresClosureContext) {
-        meth->SetRequiresClosureContext();
-    }
-#endif
 
     // return the method - the holder field is to be set later on!
     return meth;

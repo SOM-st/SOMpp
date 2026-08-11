@@ -127,10 +127,7 @@ public:
 
     bool LastBytecodeIs(size_t indexFromEnd, uint8_t bytecode);
 
-#ifdef FRAME_OPTIMIZATION
-
     void SetRequiresClosureContext() { requiresClosureContext = true; }
-#endif
 
 private:
     VMTrivialMethod* assembleTrivialMethod();

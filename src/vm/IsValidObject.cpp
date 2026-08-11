@@ -211,7 +211,7 @@ void obtain_vtables_of_known_classes(VMSymbol* someValidSymbol) {
     vt_big_integer = get_vtable(bi);
 
     auto* mth = new (GetHeap<HEAP_CLS>(), 0)
-        VMMethod(nullptr, 0, 0, 0, 0, nullptr, nullptr);
+        VMMethod(nullptr, 0, 0, 0, 0, nullptr, nullptr, false);
     vt_method = get_vtable(mth);
     vt_object = get_vtable(load_ptr(nilObject));
 
