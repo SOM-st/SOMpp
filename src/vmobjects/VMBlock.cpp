@@ -42,6 +42,11 @@ VMBlock::VMBlock(VMInvokable* method, VMFrame* context)
       context(store_with_separate_barrier(context)) {
     write_barrier(this, method);
     write_barrier(this, context);
+#ifdef DEBUG
+    if (context) {
+        context->captured = true;
+    }
+#endif
 }
 
 VMBlock* VMBlock::CloneForMovingGC() const {

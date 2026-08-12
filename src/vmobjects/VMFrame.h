@@ -213,6 +213,10 @@ public:
     }
 #endif
 
+#ifdef DEBUG
+    bool captured;
+#endif
+
 private:
     GCFrame* previousFrame;
     GCFrame* context{nullptr};

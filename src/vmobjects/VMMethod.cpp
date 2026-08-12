@@ -116,12 +116,14 @@ void VMMethod::WalkObjects(walk_heap_fn walk) {
 VMFrame* VMMethod::UseCachedFrame() {
     VMFrame* frame = load_ptr(cachedFrame);
     cachedFrame = nullptr;
+    assert(frame == nullptr || !frame->captured);
     return frame;
 }
 
 void VMMethod::CacheFrame(VMFrame* frame) {
     cachedFrame = store_with_separate_barrier(frame);
     if (frame != nullptr) {
+        assert(!frame->captured);
         assert(frame->previousFrame == nullptr);
         frame->SetContext(nullptr);
         frame->SetBytecodeIndex(0);
