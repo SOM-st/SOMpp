@@ -777,8 +777,7 @@ void Interpreter::triggerDoesNotUnderstand(VMSymbol* signature) {
     // check if current frame is big enough for this unplanned Send
     // doesNotUnderstand: needs 3 slots, one for this, one for method name, one
     // for args
-    int64_t const additionalStackSlots =
-        3 - (int64_t)GetFrame()->RemainingStackSize();
+    int64_t const additionalStackSlots = 3 - GetFrame()->RemainingStackSize();
     if (additionalStackSlots > 0) {
         GetFrame()->SetBytecodeIndex(bytecodeIndexGlobal);
         // copy current frame into a bigger one and replace the current frame
@@ -890,8 +889,7 @@ void Interpreter::SendUnknownGlobal(VMSymbol* globalName) {
 
     // check if there is enough space on the stack for this unplanned Send
     // unknowGlobal: needs 2 slots, one for "this" and one for the argument
-    int64_t const additionalStackSlots =
-        2 - (int64_t)GetFrame()->RemainingStackSize();
+    int64_t const additionalStackSlots = 2 - GetFrame()->RemainingStackSize();
     if (additionalStackSlots > 0) {
         GetFrame()->SetBytecodeIndex(bytecodeIndexGlobal);
         // copy current frame into a bigger one and replace the current
@@ -1064,7 +1062,7 @@ void Interpreter::doReturnNonLocal() {
         // check if current frame is big enough for this unplanned send
         // #escapedBlock: needs 2 slots, one for self, and one for the block
         int64_t const additionalStackSlots =
-            2 - (int64_t)GetFrame()->RemainingStackSize();
+            2 - GetFrame()->RemainingStackSize();
         if (additionalStackSlots > 0) {
             GetFrame()->SetBytecodeIndex(bytecodeIndexGlobal);
             // copy current frame into a bigger one, and replace it

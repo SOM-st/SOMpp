@@ -93,19 +93,35 @@ public:
     [[nodiscard]] inline VMMethod* GetMethod() const;
 
     inline vm_oop_t Pop() {
+        assert(stack_ptr >
+               (locals + load_ptr(method)->GetNumberOfLocals() - 1));
         vm_oop_t result = load_ptr(*stack_ptr);
         stack_ptr--;
+        assert(stack_ptr >=
+               (locals + load_ptr(method)->GetNumberOfLocals() - 1));
         return result;
     }
 
-    inline void PopVoid() { stack_ptr--; }
+    inline void PopVoid() {
+        assert(stack_ptr >
+               (locals + load_ptr(method)->GetNumberOfLocals() - 1));
+        stack_ptr--;
+        assert(stack_ptr >=
+               (locals + load_ptr(method)->GetNumberOfLocals() - 1));
+    }
 
     inline vm_oop_t Top() {
+        assert(RemainingStackSize() >= 0);
+        assert(stack_ptr >=
+               (locals + load_ptr(method)->GetNumberOfLocals() - 1));
         vm_oop_t result = load_ptr(*stack_ptr);
         return result;
     }
 
     inline vm_oop_t Top2() {
+        assert(RemainingStackSize() >= 0);
+        assert(stack_ptr >=
+               (locals + load_ptr(method)->GetNumberOfLocals() - 1));
         vm_oop_t result = load_ptr(*(stack_ptr - 1));
         return result;
     }
@@ -166,11 +182,12 @@ public:
     void PrintStack() const;
     void PrintBytecode() const;
 
-    [[nodiscard]] size_t RemainingStackSize() const {
+    [[nodiscard]] int64_t RemainingStackSize() const {
         // - 1 because the stack pointer points at the top entry,
         // so the next entry would be put at stackPointer+1
-        size_t const size =
-            ((size_t)this + totalObjectSize - size_t(stack_ptr)) /
+        int64_t const size =
+            // NOLINTNEXTLINE(bugprone-narrowing-conversions,cppcoreguidelines-narrowing-conversions)
+            ((int64_t)this + (int64_t)totalObjectSize - (int64_t)stack_ptr) /
             sizeof(VMObject*);
         return size - 1;
     }
