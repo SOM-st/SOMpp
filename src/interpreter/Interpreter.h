@@ -64,7 +64,7 @@ public:
 
     static inline size_t GetBytecodeIndex() { return bytecodeIndexGlobal; }
 
-    static void ResetBytecodeIndex(VMFrame* forFrame) {
+    static void ResetBytecodeIndex([[maybe_unused]] VMFrame* forFrame) {
         assert(frame == forFrame);
         assert(forFrame != nullptr);
         bytecodeIndexGlobal = 0;

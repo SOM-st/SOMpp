@@ -43,7 +43,7 @@ VMBlock::VMBlock(VMInvokable* method, VMFrame* context)
     write_barrier(this, method);
     write_barrier(this, context);
 #ifdef DEBUG
-    if (context) {
+    if (context != nullptr) {
         context->captured = true;
     }
 #endif
