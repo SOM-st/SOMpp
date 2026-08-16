@@ -99,6 +99,8 @@ const uint8_t Bytecode::bytecodeLengths[] = {
     3,  // BC_JUMP2_ON_NIL_TOP_TOP
     3,  // BC_JUMP2_IF_GREATER
     3,  // BC_JUMP2_BACKWARD
+
+    2,  // BC_PUSH_BLOCK_WITHOUT_CONTEXT
 };
 
 const char* Bytecode::bytecodeNames[] = {
@@ -169,6 +171,7 @@ const char* Bytecode::bytecodeNames[] = {
     "JUMP2_ON_NIL_TOP_TOP",      // 64
     "JUMP2_IF_GREATER",          // 65
     "JUMP2_BACKWARD  ",          // 66
+    "PUSH_BLOCK_NO_CTX",         // 67
 };
 
 bool IsJumpBytecode(uint8_t bc) {

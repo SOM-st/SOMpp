@@ -152,7 +152,8 @@ vm_oop_t Interpreter::Start() {
                                        &&LABEL_BC_JUMP2_ON_NOT_NIL_TOP_TOP,
                                        &&LABEL_BC_JUMP2_ON_NIL_TOP_TOP,
                                        &&LABEL_BC_JUMP2_IF_GREATER,
-                                       &&LABEL_BC_JUMP2_BACKWARD};
+                                       &&LABEL_BC_JUMP2_BACKWARD,
+                                       &&LABEL_BC_PUSH_BLOCK_WITHOUT_CONTEXT};
 
     goto* loopTargets[currentBytecodes[bytecodeIndexGlobal]];
 
@@ -241,7 +242,12 @@ LABEL_BC_PUSH_FIELD_1:
 
 LABEL_BC_PUSH_BLOCK:
     PROLOGUE(2);
-    doPushBlock(bytecodeIndexGlobal - 2);
+    doPushBlock(bytecodeIndexGlobal - 2, true);
+    DISPATCH_GC();
+
+LABEL_BC_PUSH_BLOCK_WITHOUT_CONTEXT:
+    PROLOGUE(2);
+    doPushBlock(bytecodeIndexGlobal - 2, false);
     DISPATCH_GC();
 
 LABEL_BC_PUSH_CONSTANT:
@@ -862,13 +868,19 @@ void Interpreter::doReturnFieldWithIndex(uint8_t fieldIndex) {
     popFrameAndPushResult(o);
 }
 
-void Interpreter::doPushBlock(size_t bytecodeIndex) {
+void Interpreter::doPushBlock(size_t bytecodeIndex, bool withContext) {
     vm_oop_t block = method->GetConstant(bytecodeIndex);
     auto* blockMethod = static_cast<VMInvokable*>(block);
 
     uint8_t const numOfArgs = blockMethod->GetNumberOfArguments();
-
-    GetFrame()->Push(Universe::NewBlock(blockMethod, GetFrame(), numOfArgs));
+    if (withContext) {
+        assert(blockMethod->RequiresClosureContext());
+        GetFrame()->Push(
+            Universe::NewBlock(blockMethod, GetFrame(), numOfArgs));
+    } else {
+        assert(!blockMethod->RequiresClosureContext());
+        GetFrame()->Push(Universe::NewBlock(blockMethod, nullptr, numOfArgs));
+    }
 }
 
 void Interpreter::doPushGlobal(size_t bytecodeIndex) {

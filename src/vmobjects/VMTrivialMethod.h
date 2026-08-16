@@ -20,6 +20,8 @@ public:
 
     [[nodiscard]] bool IsPrimitive() const final { return false; };
 
+    [[nodiscard]] bool RequiresClosureContext() const override { return true; }
+
     void MergeScopeInto(MethodGenerationContext& mgenc) final {
         if (!arguments.empty()) {
             mgenc.InlineAsLocals(arguments);
@@ -65,6 +67,9 @@ public:
         write_barrier(this, sig);
         write_barrier(this, literal);
     }
+
+    // just pushes a literal, never touches self
+    [[nodiscard]] bool RequiresClosureContext() const override { return false; }
 
     [[nodiscard]] inline size_t GetObjectSize() const override {
         return sizeof(VMLiteralReturn);

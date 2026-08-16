@@ -142,6 +142,7 @@ private:
     void removeLastBytecodes(size_t numBytecodes);
     void removeLastBytecodeAt(size_t indexFromEnd);
 
+    bool lastBytecodeIsPushBlock(size_t indexFromEnd);
     bool hasOneLiteralBlockArgument();
     bool hasTwoLiteralBlockArguments();
     uint8_t lastBytecodeAt(size_t indexFromEnd);

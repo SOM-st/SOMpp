@@ -214,7 +214,7 @@ public:
 #endif
 
 #ifdef DEBUG
-    bool captured;
+    bool captured{false};
 #endif
 
 private:
