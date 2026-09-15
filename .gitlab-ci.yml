@@ -6,13 +6,9 @@ variables:
   PYTHONUNBUFFERED: "true"
 
 before_script:
-  - |+
-    git submodule update --init
-    if [ "$MACHINE" = "zullie1" ]; then
-      export PATH=/opt/local/bin:/Users/gitlab-runner/Library/Python/3.12/bin:$PATH
-      export MP='-mp'
-    fi
-    export PATH=$HOME/.local/bin:$PATH
+  - |
+    source .github/build-and-test.sh
+    init_submodule_and_path
 
 build_and_test:
   stage: build-and-test
@@ -22,98 +18,67 @@ build_and_test:
           - yuria
           - yuria2
           - yuria3
-        COMPILER: [clang]
-        GC: [COPYING]
+        MACHINE_LOCATION: [kent]
+        COMPILER: [clang, gcc]
+        GC: [COPYING, PAGED_MARK_SWEEP]
         CMAKE_FLAGS:
           - "-DUSE_TAGGING=true"
-          - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"
-          - "-DUSE_TAGGING=false -DCACHE_INTEGER=false"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=false -DUSE_VECTOR_PRIMITIVES=false"
 
-      # Track GCC only for one configuration
-      - MACHINE: [yuria, yuria2, yuria3]
-        COMPILER: [gcc]
-        GC: [COPYING]
-        CMAKE_FLAGS: ["-DUSE_TAGGING=true"]
-
       - MACHINE: [zullie1]
+        MACHINE_LOCATION: [kent]
         COMPILER: [clang]
         GC: [GENERATIONAL]
         CMAKE_FLAGS:
           - "-DUSE_TAGGING=true"
-          - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"
-          - "-DUSE_TAGGING=false -DCACHE_INTEGER=false"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=false -DUSE_VECTOR_PRIMITIVES=false"
 
-      # Mark-Sweep working, but not super exciting
-      - MACHINE: [yuria, yuria2, yuria3]
-        COMPILER: [gcc]
-        GC: [MARK_SWEEP]
-        CMAKE_FLAGS: ["-DUSE_TAGGING=true"]
+      
+      - MACHINE: [laertes, ophelia, brutus]
+        MACHINE_LOCATION: [ssw]
+        GC: [GENERATIONAL]
+        COMPILER: [clang, gcc]
+        CMAKE_FLAGS:
+          - "-DUSE_TAGGING=true"
+          - "-DUSE_TAGGING=false -DCACHE_INTEGER=false -DUSE_VECTOR_PRIMITIVES=false"
 
-  tags: [kent-$MACHINE]
+      - MACHINE: [yuria4]
+        MACHINE_LOCATION: [kent]
+        GC: [COPYING, MARK_SWEEP, GENERATIONAL, PAGED_MARK_SWEEP]
+        COMPILER: [clang]
+        CMAKE_FLAGS:
+          - "-DUSE_TAGGING=true"
+
+      - MACHINE: [cassius]
+        MACHINE_LOCATION: [ssw]
+        COMPILER: [clang, gcc]
+        GC: [GENERATIONAL, COPYING, MARK_SWEEP, PAGED_MARK_SWEEP]
+        CMAKE_FLAGS:
+          - "-DUSE_TAGGING=true"
+      
+
+  tags: [$MACHINE_LOCATION-$MACHINE]
   script:
-    - rm -rf release && mkdir release
-    - rm -rf debug && mkdir debug
-
-    - if [ "$COMPILER" = "gcc" ];   then export CC=gcc-13;   export CXX=g++-13; fi
-    - if [ "$COMPILER" = "clang" ]; then export CC=clang$MP-18; export CXX=clang++$MP-18; fi
-
-    # compose a name for this configuration
-    - |+
-      export NAME="som-$COMPILER-$GC"
-      if [[ $CMAKE_FLAGS =~ "USE_TAGGING=true" ]]; then
-        NAME="$NAME-inttag"
-      else
-        NAME="$NAME-intbox"
-      fi
-      if [[ $CMAKE_FLAGS =~ "CACHE_INTEGER=true" ]]; then
-        NAME="$NAME-intcache"
-      fi
-      if [[ $CMAKE_FLAGS =~ "DUSE_VECTOR_PRIMITIVES=false" ]]; then
-        NAME="$NAME-somvec"
-      fi
-      NAME=`echo "$NAME" | tr '[:upper:]' '[:lower:]'`
-
-    - cd release
-    - cmake .. $CMAKE_FLAGS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Release
-    - make -j
-    - mv SOM++ ../$NAME
-    - cd ..
-
-    - cd debug
-    - cmake .. $CMAKE_FLAGS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Debug
-    - make -j
-    - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
-    - ./unittests -cfg -cp ../Smalltalk:../TestSuite/BasicInterpreterTests ../Examples/Hello.som
-    - ./SOM++ -prim-hash-check -cp ../Smalltalk ../Examples/Benchmarks/BenchmarkHarness.som VectorBenchmark 1 1
-    - cd ..
-
-    - cd release
-    - cmake .. $CMAKE_FLAGS -DGC_TYPE=$GC -DCMAKE_BUILD_TYPE=Release
-    - make -j
-    - ./SOM++ -cfg -cp ../Smalltalk ../TestSuite/TestHarness.som
-    - mv SOM++ ../$NAME
-    - cd ..
+    - prepare_build_folders
+    - set_compiler
+    - determine_name
+    - make_and_test_debug_build
+    - make_and_test_release_build
 
     - |+
       # Test SomSom
       if [ "$COMPILER" = "clang" ]; then
         # this is to load balance the SomSom testing
         # only when compiling with Clang, and only on one machine for each integer configuration
-        if [ "$MACHINE $CMAKE_FLAGS" = "zullie1 -DUSE_TAGGING=true" ] || [ "$MACHINE $CMAKE_FLAGS" = "yuria2 -DUSE_TAGGING=false -DCACHE_INTEGER=true" ] || [ "$MACHINE $CMAKE_FLAGS" = "yuria3 -DUSE_TAGGING=false -DCACHE_INTEGER=false" ]; then
-          ./$NAME -cp Smalltalk:TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects core-lib/SomSom/tests/SomSomTests.som
+        if [ "$MACHINE $CMAKE_FLAGS" = "zullie1 -DUSE_TAGGING=true" ] || [ "$MACHINE $CMAKE_FLAGS" = "yuria2 -DUSE_TAGGING=false -DCACHE_INTEGER=true" ] || [ "$MACHINE $CMAKE_FLAGS" = "yuria3 -DUSE_TAGGING=false -DCACHE_INTEGER=false" ] || [ "$MACHINE $CMAKE_FLAGS" = "brutus -DUSE_TAGGING=true" ]; then
+          test_somsom
         fi
       fi
 
-    # run the benchmarks
     - |+
-      if [ "$MACHINE" = "zullie1" ]; then
-        M=''
-      else
-        M="t:$MACHINE"
-      fi
-      rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf all "e:${NAME}" $M
+      set -o xtrace
+      set_machine_tag_and_experiment
+      rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf ${EXPERIMENT} "e:${NAME}" $M
 
 complete_benchmarking:
   stage: benchmark-completion

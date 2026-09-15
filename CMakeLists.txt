@@ -67,7 +67,7 @@ file(GLOB PRIMITIVESCORE_SRC ${PRIMITIVESCORE_DIR}/*.cpp)
 file(GLOB UNITTEST_SRC    ${UNITTEST_DIR}/*.cpp)
 
 option(USE_TAGGING "Enable immediate integers using tagging" FALSE)
-set(GC_TYPE "COPYING" CACHE STRING "Select the type of GC to be used: COPYING, MARK_SWEEP, GENERATIONAL")
+set(GC_TYPE "COPYING" CACHE STRING "Select the type of GC to be used: COPYING, MARK_SWEEP, PAGED_MARK_SWEEP, DEBUG_MARK_SWEEP, GENERATIONAL")
 
 option(CACHE_INTEGER "Enable caching of boxed integers" FALSE)
 set(INT_CACHE_MIN_VALUE -5  CACHE STRING "Lower bound of cached integers")
@@ -207,7 +207,6 @@ target_sources(SOM++ PRIVATE
   ${PRIMITIVESCORE_SRC})
 
 target_compile_options(SOM++ PRIVATE
-  -m64
   -Wno-endif-labels)
 
 target_include_directories(SOM++ PRIVATE ${SRC_DIR})
@@ -274,6 +273,7 @@ if(CLANG_TIDY_EXE)
   if(RUN_CLANG_TIDY_EXE)
     add_custom_target(check-tidy
       COMMAND ${RUN_CLANG_TIDY_EXE}
+        -quiet
         -clang-tidy-binary ${CLANG_TIDY_EXE}
         -p ${CMAKE_BINARY_DIR}
         -quiet
@@ -285,6 +285,7 @@ if(CLANG_TIDY_EXE)
     find_program(CLANG_APPLY_REPLACEMENT_BINARY NAMES clang-apply-replacements-mp-22 clang-apply-replacements-22 clang-apply-replacements)
     add_custom_target(tidy
       COMMAND ${RUN_CLANG_TIDY_EXE}
+        -quiet
         -clang-tidy-binary ${CLANG_TIDY_EXE}
         -clang-apply-replacements-binary ${CLANG_APPLY_REPLACEMENT_BINARY}
         -p ${CMAKE_BINARY_DIR}

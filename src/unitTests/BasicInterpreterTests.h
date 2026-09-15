@@ -3,6 +3,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <utility>
 
+#include "../memory/Heap.h"
 #include "../vmobjects/VMClass.h"
 #include "../vmobjects/VMDouble.h"
 #include "../vmobjects/VMSymbol.h"
@@ -198,9 +199,19 @@ private:
 
     // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
     void testBasic(TestData data) {
+        bool const oldGcStressMode = gcStressMode;
+        if (data.className == "ObjectCreation") {
+            gcStressMode = false;  // it's too slow...
+        }
+
         // The Unit Test harness will initialize Universe for a standard run.
         // This is different from other SOMs.
         vm_oop_t result = Universe::interpret(data.className, data.methodName);
+
+        if (data.className == "ObjectCreation") {
+            gcStressMode = oldGcStressMode;
+        }
+
         CPPUNIT_ASSERT(result != nullptr);
         assertEqualsSOMValue(result, data);
     }

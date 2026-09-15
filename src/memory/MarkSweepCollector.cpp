@@ -1,10 +1,11 @@
 #include "MarkSweepCollector.h"
 
+#include <cassert>
 #include <cstddef>
 #include <vector>
 
-#include "../memory/Heap.h"
 #include "../misc/debug.h"
+#include "../vm/IsValidObject.h"
 #include "../vm/Universe.h"
 #include "../vmobjects/AbstractObject.h"
 #include "../vmobjects/IntegerBox.h"
@@ -12,47 +13,8 @@
 #include "../vmobjects/VMFrame.h"
 #include "MarkSweepHeap.h"
 
-#define GC_MARKED 3456
-
-void MarkSweepCollector::Collect() {
-    DebugLog("MarkSweep Collect\n");
-
-    auto* heap = GetHeap<MarkSweepHeap>();
-    Timer::GCTimer.Resume();
-    // reset collection trigger
-    heap->resetGCTrigger();
-
-    // now mark all reachables
-    markReachableObjects();
-
-    // in this survivors stack we will remember all objects that survived
-    auto* survivors = new vector<AbstractVMObject*>();
-    size_t survivorsSize = 0;
-
-    vector<AbstractVMObject*>::iterator iter;
-    for (iter = heap->allocatedObjects->begin();
-         iter != heap->allocatedObjects->end();
-         iter++) {
-        if ((*iter)->GetGCField() == GC_MARKED) {
-            // object ist marked -> let it survive
-            survivors->push_back(*iter);
-            survivorsSize += (*iter)->GetObjectSize();
-            (*iter)->SetGCField(0);
-        } else {
-            // not marked -> kill it
-            heap->FreeObject(*iter);
-        }
-    }
-
-    delete heap->allocatedObjects;
-    heap->allocatedObjects = survivors;
-
-    heap->spcAlloc = survivorsSize;
-    // TODO(smarr): Maybe choose another constant to calculate new
-    // collectionLimit here
-    heap->collectionLimit = 2 * survivorsSize;
-    Timer::GCTimer.Halt();
-}
+static size_t markedBytes = 0;
+static std::vector<AbstractVMObject*> markStack;
 
 static gc_oop_t mark_object(gc_oop_t oop) {
     if (IS_TAGGED(oop)) {
@@ -60,17 +22,41 @@ static gc_oop_t mark_object(gc_oop_t oop) {
     }
 
     AbstractVMObject* obj = AS_OBJ(oop);
+    assert(IsValidObject(obj));
 
-    if (obj->GetGCField() != 0) {
+    if (obj->GetGCField() == MarkSweepHeap::GC_MARKED) {
         return oop;
     }
 
-    obj->SetGCField(GC_MARKED);
-    obj->WalkObjects(mark_object);
+    obj->SetGCField(MarkSweepHeap::GC_MARKED);
+    markedBytes += MarkSweepCollector::GetAllocationSize(obj->GetObjectSize());
+    markStack.push_back(obj);
     return oop;
 }
 
+void MarkSweepCollector::Collect() {
+    DebugLog("MarkSweep Collect\n");
+
+    Timer::GCTimer.Resume();
+    heap->resetGCTrigger();
+
+    markReachableObjects();
+    heap->sweep();
+
+    Timer::GCTimer.Halt();
+}
+
 void MarkSweepCollector::markReachableObjects() {
-    // This walks the globals of the universe, and the interpreter
+    markedBytes = 0;
+    markStack.clear();
+
     Universe::WalkGlobals(mark_object);
+
+    while (!markStack.empty()) {
+        AbstractVMObject* obj = markStack.back();
+        markStack.pop_back();
+        obj->WalkObjects(mark_object);
+    }
+
+    heap->liveBytes = markedBytes;
 }

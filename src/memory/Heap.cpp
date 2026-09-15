@@ -30,10 +30,18 @@
 
 #include "../misc/defs.h"
 #include "../vm/Print.h"
-#include "CopyingHeap.h"       // NOLINT(misc-include-cleaner)
-#include "DebugCopyingHeap.h"  // NOLINT(misc-include-cleaner)
-#include "GenerationalHeap.h"  // NOLINT(misc-include-cleaner)
-#include "MarkSweepHeap.h"     // NOLINT(misc-include-cleaner)
+#include "CopyingHeap.h"         // NOLINT(misc-include-cleaner)
+#include "DebugCopyingHeap.h"    // NOLINT(misc-include-cleaner)
+#include "DebugMarkSweepHeap.h"  // NOLINT(misc-include-cleaner)
+#include "GenerationalHeap.h"    // NOLINT(misc-include-cleaner)
+#include "MarkSweepHeap.h"       // NOLINT(misc-include-cleaner)
+#include "PagedMarkSweepHeap.h"  // NOLINT(misc-include-cleaner)
+
+#if DEBUG
+bool gcStressMode = false;
+#else
+// it's defined as false
+#endif
 
 template <class HEAP_T>
 void Heap<HEAP_T>::InitializeHeap(size_t objectSpaceSize) {
@@ -77,3 +85,11 @@ template Heap<CopyingHeap>::~Heap();
 class MarkSweepHeap;
 template MarkSweepHeap* Heap<MarkSweepHeap>::theHeap;
 template Heap<MarkSweepHeap>::~Heap();
+
+class DebugMarkSweepHeap;
+template DebugMarkSweepHeap* Heap<DebugMarkSweepHeap>::theHeap;
+template Heap<DebugMarkSweepHeap>::~Heap();
+
+class PagedMarkSweepHeap;
+template PagedMarkSweepHeap* Heap<PagedMarkSweepHeap>::theHeap;
+template Heap<PagedMarkSweepHeap>::~Heap();

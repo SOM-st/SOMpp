@@ -45,6 +45,8 @@ public:
 
     [[nodiscard]] std::string AsDebugString() const override;
 
+    void WalkObjects(walk_heap_fn /*unused*/) override;
+
 private:
     const uint8_t numberOfArgumentsOfSignature;
     GCClass* cachedClass_invokable[3]{};
@@ -70,8 +72,4 @@ private:
 
     friend class Signature;
     friend class VMClass;
-
-    make_testable(public);
-
-    void WalkObjects(walk_heap_fn /*unused*/) override;
 };

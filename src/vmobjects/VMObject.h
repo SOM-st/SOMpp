@@ -42,7 +42,7 @@
  * ____________________________________________________________ *
  *| vtable*          |   0x00 - 0x07                           |*
  *|__________________|_________________________________________|*
- *| gcfield          |   0x08 - 0x0f                           |*
+ *| gcField          |   0x08 - 0x0f                           |*
  *| hash             |   0x10 - 0x17                           |*
  *| totalObjectSize  |   0x18 - 0x1f                           |*
  *| numberOfFields   |   0x20 - 0x27 (because of alignment)    |*
@@ -139,8 +139,8 @@ public:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
         static_assert(
-            offsetof(VMObject, gcfield) == 8,
-            "vtable ptr should push gcfield to offset 8 on 64-bit systems. If "
+            offsetof(VMObject, gcField) == 8,
+            "vtable ptr should push gcField to offset 8 on 64-bit systems. If "
             "this fails, please update the offsets in the VMObject structure "
             "at the top of this file accordingly.");
         static_assert(offsetof(VMObject, hash) == 16,

@@ -249,7 +249,7 @@ void obtain_vtables_of_known_classes(VMSymbol* someValidSymbol) {
     auto* set = new (GetHeap<HEAP_CLS>(), 0) VMSetter(someValidSymbol, v, 0, 0);
     vt_setter = get_vtable(set);
 
-    auto* str = new (GetHeap<HEAP_CLS>(), PADDED_SIZE(1)) VMString(0, nullptr);
+    auto* str = new (GetHeap<HEAP_CLS>(), 0) VMString(0, nullptr);
     vt_string = get_vtable(str);
     vt_symbol = get_vtable(someValidSymbol);
 }

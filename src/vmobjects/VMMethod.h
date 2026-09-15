@@ -218,7 +218,7 @@ private:
     const uint8_t numberOfArguments;
     const size_t numberOfConstants;
 
-private:
+    make_testable(private);
     LexicalScope* lexicalScope;
     BackJump* inlinedLoops;
 

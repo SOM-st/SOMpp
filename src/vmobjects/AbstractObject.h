@@ -6,14 +6,16 @@
  *  Created on: 10.03.2011
  *      Author: christian
  */
-
 #include <cassert>
+#include <cstddef>
 #include <iostream>
 
 #include "../memory/CopyingHeap.h"
 #include "../memory/DebugCopyingHeap.h"
+#include "../memory/DebugMarkSweepHeap.h"
 #include "../memory/GenerationalHeap.h"
 #include "../memory/MarkSweepHeap.h"
+#include "../memory/PagedMarkSweepHeap.h"
 #include "../misc/defs.h"
 #include "../vm/Print.h"
 #include "ObjectFormats.h"
@@ -40,7 +42,7 @@ public:
 
     [[nodiscard]] virtual std::string AsDebugString() const = 0;
 
-    AbstractVMObject() { gcfield = 0; }
+    AbstractVMObject() = default;
     ~AbstractVMObject() override = default;
 
     [[nodiscard]] inline virtual size_t GetNumberOfFields() const {
@@ -70,7 +72,7 @@ public:
      * (numberOfFields*sizeof(VMObject*))
      *   - chars in VMString/VMSymbol, a_b must be set to (Stringlength + 1)
      *   - array size in VMArray; a_b must be set to
-     * (size_of_array*sizeof(VMObect*))
+     * (size_of_array*sizeof(VMObject*))
      *   - fields in VMMethod, a_b must be set to (number_of_bc +
      * number_of_csts*sizeof(VMObject*))
      */
@@ -83,14 +85,12 @@ public:
         void* result = nullptr;
 #if GC_TYPE == GENERATIONAL
         if (outsideNursery) {
-            result =
-                (void*)heap->AllocateMatureObject(numBytes + additionalBytes);
+            result = heap->AllocateMatureObject(numBytes + additionalBytes);
         } else {
-            result =
-                (void*)heap->AllocateNurseryObject(numBytes + additionalBytes);
+            result = heap->AllocateNurseryObject(numBytes + additionalBytes);
         }
 #else
-        result = (void*)heap->AllocateObject(numBytes + additionalBytes);
+        result = heap->AllocateObject(numBytes + additionalBytes);
 #endif
 
         assert(result != INVALID_VM_POINTER);

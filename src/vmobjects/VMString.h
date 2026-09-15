@@ -52,6 +52,11 @@ public:
         return (int64_t)hash;
     }
 
+    /**
+     * There's no guarantee that this is null-terminated.
+     * Indeed it's highly unlikely to be.
+     * Need to always use with GetStringLength().
+     */
     [[nodiscard]] inline char* GetRawChars() const { return chars; }
 
     [[nodiscard]] std::string GetStdString() const;

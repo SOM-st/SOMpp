@@ -54,6 +54,5 @@ private:
     GCInvokable* blockMethod;
     GCFrame* context;
 
-private:
     static const int VMBlockNumberOfFields;
 };

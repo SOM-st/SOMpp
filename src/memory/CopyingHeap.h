@@ -9,7 +9,7 @@ class CopyingHeap : public Heap<CopyingHeap> {
 
 public:
     explicit CopyingHeap(size_t objectSpaceSize);
-    AbstractVMObject* AllocateObject(size_t size);
+    void* AllocateObject(size_t size);
 
     bool IsInCurrentBuffer(AbstractVMObject* obj);
     bool IsInOldBufferAndOldBufferIsValid(AbstractVMObject* obj);

@@ -26,6 +26,7 @@
  THE SOFTWARE.
  */
 
+#include "../misc/defs.h"
 #include "../primitivesCore/Primitives.h"
 #include "Signature.h"
 #include "VMInvokable.h"

@@ -6,12 +6,13 @@ jobs:
   test_soms:
     name: Run (Compiler=${{matrix.compiler}} GC=${{matrix.gc}} ${{matrix.cmake_flags}}
     runs-on: ubuntu-24.04
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     # continue-on-error: true
     strategy:
       fail-fast: false # we want all jobs to run, because they may fail independently
       matrix:
         compiler: [clang, gcc]
-        gc: [GENERATIONAL, MARK_SWEEP, COPYING]
+        gc: [GENERATIONAL, MARK_SWEEP, DEBUG_MARK_SWEEP, COPYING, PAGED_MARK_SWEEP]
         cmake_flags:
           - "-DUSE_TAGGING=true"
           - "-DUSE_TAGGING=false -DCACHE_INTEGER=true"
@@ -99,6 +100,7 @@ jobs:
   build_all_debugging_variants:
     name: Build All Debugging Variants
     runs-on: ubuntu-24.04
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     steps:
       - name: Checkout SOM Repository
         uses: actions/checkout@v6

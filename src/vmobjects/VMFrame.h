@@ -126,7 +126,7 @@ public:
         return result;
     }
 
-    inline void SetTop(gc_oop_t val) { *stack_ptr = val; }
+    inline void SetTop(vm_oop_t val) { store_ptr(*stack_ptr, val); }
 
     inline void Push(vm_oop_t obj) {
         assert(RemainingStackSize() > 0);

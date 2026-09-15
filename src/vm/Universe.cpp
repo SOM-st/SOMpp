@@ -152,17 +152,23 @@ void Universe::Shutdown() {
 }
 
 static void printVmConfig() {
-    if (GC_TYPE == GENERATIONAL) {  // NOLINT(misc-redundant-expression)
+    // NOLINTBEGIN(misc-redundant-expression)
+    if (GC_TYPE == GENERATIONAL) {
         cout << "\tgarbage collector: generational\n";
-    } else if (GC_TYPE == COPYING) {  // NOLINT(misc-redundant-expression)
+    } else if (GC_TYPE == COPYING) {
         cout << "\tgarbage collector: copying\n";
-    } else if (GC_TYPE == MARK_SWEEP) {  // NOLINT(misc-redundant-expression)
+    } else if (GC_TYPE == MARK_SWEEP) {
         cout << "\tgarbage collector: mark-sweep\n";
-    } else if (GC_TYPE == DEBUG_COPYING) {  // NOLINT(misc-redundant-expression)
+    } else if (GC_TYPE == DEBUG_MARK_SWEEP) {
+        cout << "\tgarbage collector: debug mark-sweep\n";
+    } else if (GC_TYPE == DEBUG_COPYING) {
         cout << "\tgarbage collector: debug copying\n";
+    } else if (GC_TYPE == PAGED_MARK_SWEEP) {
+        cout << "\tgarbage collector: paged mark-sweep\n";
     } else {
         cout << "\tgarbage collector: unknown\n";
     }
+    // NOLINTEND(misc-redundant-expression)
 
     if (USE_TAGGING) {
         cout << "\twith tagged integers\n";
@@ -202,6 +208,13 @@ vector<std::string> Universe::handleArguments(int32_t argc, char** argv) {
             ++dumpBytecodes;
         } else if (!sawOtherArgs && strncmp(argv[i], "-cfg", 4) == 0) {
             printVmConfig();
+        } else if (!sawOtherArgs && strncmp(argv[i], "-gc-stress", 10) == 0) {
+#if DEBUG
+            gcStressMode = true;
+#else
+            ErrorPrint(
+                "gc-stress mode is only available in debug builds of SOM++");
+#endif
         } else if (!sawOtherArgs && strncmp(argv[i], "-g", 2) == 0) {
             ++gcVerbosity;
         } else if (!sawOtherArgs && strncmp(argv[i], "-H", 2) == 0) {
@@ -304,6 +317,8 @@ void Universe::printUsageAndExit(char* executable) {
         << "         2x - print statistics upon each collection\n"
         << "         3x - print statistics and dump heap upon each collection\n"
         << "\n";
+    cout << "    -gc-stress trigger a garbage collection after every "
+            "allocation\n";
     cout << "    -HxMB set the heap size to x MB (default: 1 MB)\n";
     cout << "    -HxKB set the heap size to x KB (default: 1 MB)\n";
     cout << "    -h|--help show this help\n";

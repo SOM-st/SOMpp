@@ -21,9 +21,9 @@ class GenerationalHeap : public Heap<GenerationalHeap> {
     friend class GenerationalCollector;
 
 public:
-    explicit GenerationalHeap(size_t objectSpaceSize = 1048576);
-    AbstractVMObject* AllocateNurseryObject(size_t size);
-    AbstractVMObject* AllocateMatureObject(size_t size);
+    explicit GenerationalHeap(size_t objectSpaceSize);
+    void* AllocateNurseryObject(size_t size);
+    void* AllocateMatureObject(size_t size);
     [[nodiscard]] size_t GetMaxNurseryObjectSize() const;
     void writeBarrier(VMObjectBase* holder, vm_oop_t referencedObject);
     inline bool isObjectInNursery(vm_oop_t obj);
@@ -63,8 +63,8 @@ inline void GenerationalHeap::writeBarrier(VMObjectBase* holder,
     assert(IsValidObject(referencedObject));
     assert(IsValidObject(holder));
 
-    const size_t gcfield = *(((size_t*)holder) + 1);
-    if ((gcfield & 6U /* MASK_OBJECT_IS_OLD + MASK_SEEN_BY_WRITE_BARRIER */) ==
+    const size_t gcField = *(((size_t*)holder) + 1);
+    if ((gcField & 6U /* MASK_OBJECT_IS_OLD + MASK_SEEN_BY_WRITE_BARRIER */) ==
         2U /* MASK_OBJECT_IS_OLD */) {
         writeBarrier_OldHolder(holder, referencedObject);
     }

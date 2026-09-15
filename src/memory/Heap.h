@@ -44,6 +44,15 @@
 
 using namespace std;
 
+/*
+ * If true, request a GC after every single allocation.
+ */
+#if DEBUG
+extern bool gcStressMode;
+#else
+  #define gcStressMode false
+#endif
+
 template <class HEAP_T>
 class Heap {
     friend class GarbageCollector<HEAP_T>;

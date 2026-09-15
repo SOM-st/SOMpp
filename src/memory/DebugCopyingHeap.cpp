@@ -8,6 +8,7 @@
 
 #include "../vm/Print.h"
 #include "../vmobjects/AbstractObject.h"
+#include "Heap.h"
 
 void DebugCopyingHeap::switchBuffers(bool increaseMemory) {
     assert(
@@ -48,9 +49,14 @@ void DebugCopyingHeap::invalidateOldBuffer() {
     }
 }
 
-AbstractVMObject* DebugCopyingHeap::AllocateObject(size_t size) {
-    auto* newObject = (AbstractVMObject*)malloc(size);
-    currentHeap.push_back(newObject);
+void* DebugCopyingHeap::AllocateObject(size_t size) {
+    void* newObject = malloc(size);
+    if (newObject == nullptr) {
+        ErrorPrint("\nFailed to allocate " + to_string(size) + " Bytes.\n");
+        Quit(-1);
+    }
+
+    currentHeap.push_back(static_cast<AbstractVMObject*>(newObject));
 
     currentHeapUsage += size;
 
@@ -60,7 +66,7 @@ AbstractVMObject* DebugCopyingHeap::AllocateObject(size_t size) {
     }
 
     // let's see if we have to trigger the GC
-    if (currentHeapUsage > collectionLimit) {
+    if (currentHeapUsage > collectionLimit || gcStressMode) {
         requestGC();
     }
 

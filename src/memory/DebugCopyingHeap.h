@@ -14,7 +14,7 @@ public:
           currentHeapSize(objectSpaceSize),
           collectionLimit((size_t)((double)objectSpaceSize * 0.9)) {}
 
-    AbstractVMObject* AllocateObject(size_t size);
+    void* AllocateObject(size_t size);
 
     bool IsInCurrentBuffer(AbstractVMObject* obj);
     bool IsInOldBufferAndOldBufferIsValid(AbstractVMObject* obj);
