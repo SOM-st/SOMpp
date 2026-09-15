@@ -94,7 +94,7 @@ public:
 
     VMMethod(VMSymbol* signature, size_t bcCount, size_t numberOfConstants,
              size_t numLocals, size_t maxStackDepth, LexicalScope* lexicalScope,
-             BackJump* inlinedLoops);
+             BackJump* inlinedLoops, bool requiresContext);
 
     ~VMMethod() override { delete lexicalScope; }
 
@@ -142,9 +142,13 @@ public:
 
     inline void SetBytecode(size_t indx, uint8_t val) { bytecodes[indx] = val; }
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-    void SetCachedFrame(VMFrame* frame);
-    GCFrame* GetCachedFrame() const;
+#ifdef FRAME_OPTIMIZATION
+    void CacheFrame(VMFrame* frame);
+    [[nodiscard]] VMFrame* UseCachedFrame();
+
+    [[nodiscard]] bool RequiresClosureContext() const override {
+        return requiresClosureContext;
+    }
 #endif
 
     void WalkObjects(walk_heap_fn /*unused*/) override;
@@ -218,9 +222,11 @@ private:
     LexicalScope* lexicalScope;
     BackJump* inlinedLoops;
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-    GCFrame* cachedFrame;
+#ifdef FRAME_OPTIMIZATION
+    GCFrame* cachedFrame{nullptr};
 #endif
+
+    bool requiresClosureContext;
 
 #ifdef BYTECODE_HEATMAP
     uint64_t* heatmap;

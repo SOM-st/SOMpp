@@ -80,7 +80,7 @@ option(USE_VECTOR_PRIMITIVES "Use Vector primitives" TRUE)
 option(GENERATE_ALLOCATION_STATISTICS "Generate allocation statistics" FALSE)
 
 option(LOG_RECEIVER_TYPES        "Log types of receivers" FALSE)
-option(UNSAFE_FRAME_OPTIMIZATION "Enable unsafe frame optimization" FALSE)
+option(FRAME_OPTIMIZATION        "Enable frame optimization" TRUE)
 option(ADDITIONAL_ALLOCATION     "Enable additional allocations" FALSE)
 
 option(FOR_PROFILING "Compile for profiling" FALSE)
@@ -113,8 +113,8 @@ endif ()
 if (GENERATE_ALLOCATION_STATISTICS)
   add_definitions(-DGENERATE_ALLOCATION_STATISTICS)
 endif ()
-if (UNSAFE_FRAME_OPTIMIZATION)
-  add_definitions(-DUNSAFE_FRAME_OPTIMIZATION)
+if (FRAME_OPTIMIZATION)
+  add_definitions(-DFRAME_OPTIMIZATION)
 endif ()
 if (LOG_RECEIVER_TYPES)
   add_definitions(-DLOG_RECEIVER_TYPES)
@@ -276,6 +276,7 @@ if(CLANG_TIDY_EXE)
         -quiet
         -clang-tidy-binary ${CLANG_TIDY_EXE}
         -p ${CMAKE_BINARY_DIR}
+        -quiet
         ${TIDY_SOURCE_FILES}
       WORKING_DIRECTORY ${ROOT_DIR}
       COMMENT "Checking code with run-clang-tidy using compile_commands.json"
@@ -289,6 +290,7 @@ if(CLANG_TIDY_EXE)
         -clang-apply-replacements-binary ${CLANG_APPLY_REPLACEMENT_BINARY}
         -p ${CMAKE_BINARY_DIR}
         -fix
+        -quiet
         ${TIDY_SOURCE_FILES}
       WORKING_DIRECTORY ${ROOT_DIR}
       COMMENT "Run run-clang-tidy --fix, using compile_commands.json"

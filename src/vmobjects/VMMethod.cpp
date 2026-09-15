@@ -56,18 +56,14 @@
 VMMethod::VMMethod(VMSymbol* signature, size_t bcCount,
                    size_t numberOfConstants, size_t numLocals,
                    size_t maxStackDepth, LexicalScope* lexicalScope,
-                   BackJump* inlinedLoops)
+                   BackJump* inlinedLoops, bool requiresContext)
     : VMInvokable(signature), numberOfLocals(numLocals),
       maximumNumberOfStackElements(maxStackDepth), bcLength(bcCount),
       numberOfArguments(signature == nullptr
                             ? 0
                             : Signature::GetNumberOfArguments(signature)),
       numberOfConstants(numberOfConstants), lexicalScope(lexicalScope),
-      inlinedLoops(inlinedLoops) {
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-    cachedFrame = nullptr;
-#endif
-
+      inlinedLoops(inlinedLoops), requiresClosureContext(requiresContext) {
     indexableFields = (gc_oop_t*)(&indexableFields + 2);
     for (size_t i = 0; i < numberOfConstants; ++i) {
         indexableFields[i] = nilObject;
@@ -102,7 +98,7 @@ VMMethod* VMMethod::CloneForMovingGC() const {
 void VMMethod::WalkObjects(walk_heap_fn walk) {
     VMInvokable::WalkObjects(walk);
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
+#ifdef FRAME_OPTIMIZATION
     if (cachedFrame != nullptr) {
         cachedFrame = static_cast<GCFrame*>(walk(cachedFrame));
     }
@@ -116,18 +112,23 @@ void VMMethod::WalkObjects(walk_heap_fn walk) {
     }
 }
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-GCFrame* VMMethod::GetCachedFrame() const {
-    return cachedFrame;
+#ifdef FRAME_OPTIMIZATION
+VMFrame* VMMethod::UseCachedFrame() {
+    VMFrame* frame = load_ptr(cachedFrame);
+    cachedFrame = nullptr;
+    assert(frame == nullptr || !frame->captured);
+    return frame;
 }
 
-void VMMethod::SetCachedFrame(VMFrame* frame) {
+void VMMethod::CacheFrame(VMFrame* frame) {
     cachedFrame = store_with_separate_barrier(frame);
     if (frame != nullptr) {
+        assert(!frame->captured);
+        assert(frame->previousFrame == nullptr);
         frame->SetContext(nullptr);
         frame->SetBytecodeIndex(0);
         frame->ResetStackPointer();
-        write_barrier(this, cachedFrame);
+        write_barrier(this, frame);
     }
 }
 #endif
@@ -191,6 +192,11 @@ void VMMethod::InlineInto(MethodGenerationContext& mgenc, const Parser& parser,
     if (mergeScope) {
         mgenc.MergeIntoScope(*lexicalScope);
     }
+#ifdef FRAME_OPTIMIZATION
+    if (requiresClosureContext) {
+        mgenc.SetRequiresClosureContext();
+    }
+#endif
     inlineInto(mgenc, parser);
 }
 
@@ -346,7 +352,8 @@ void VMMethod::inlineInto(MethodGenerationContext& mgenc,
                 break;
             }
 
-            case BC_PUSH_BLOCK: {
+            case BC_PUSH_BLOCK:
+            case BC_PUSH_BLOCK_WITHOUT_CONTEXT: {
                 auto* blockMethod = (VMInvokable*)GetConstant(i);
                 blockMethod->AdaptAfterOuterInlined(1, mgenc);
                 EmitPUSHBLOCK(mgenc, parser, blockMethod);
@@ -622,7 +629,8 @@ void VMMethod::AdaptAfterOuterInlined(
                 break;
             }
 
-            case BC_PUSH_BLOCK: {
+            case BC_PUSH_BLOCK:
+            case BC_PUSH_BLOCK_WITHOUT_CONTEXT: {
                 auto* blockMethod = static_cast<VMMethod*>(GetConstant(i));
                 blockMethod->AdaptAfterOuterInlined(removedCtxLevel + 1,
                                                     mgencWithInlined);

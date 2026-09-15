@@ -81,7 +81,8 @@ public:
                                size_t numberOfConstants, size_t numLocals,
                                size_t maxStackDepth,
                                LexicalScope* /*lexicalScope*/,
-                               vector<BackJump>& inlinedLoops);
+                               vector<BackJump>& inlinedLoops,
+                               bool requiresClosureContext);
     static VMObject* NewInstance(VMClass* /*classOfInstance*/);
     static VMObject* NewInstanceWithoutFields();
     static VMInteger* NewInteger(int64_t /*value*/);

@@ -332,7 +332,7 @@ VMMethod* Universe::createBootstrapMethod(VMClass* holder,
     auto* bootStrapScope = new LexicalScope(nullptr, {}, {});
     VMMethod* bootstrapMethod =
         NewMethod(SymbolFor("bootstrap"), 1, 0, 0, numArgsOfMsgSend,
-                  bootStrapScope, inlinedLoops);
+                  bootStrapScope, inlinedLoops, false);
 
     bootstrapMethod->SetBytecode(0, BC_HALT);
     bootstrapMethod->SetHolder(holder);
@@ -839,10 +839,9 @@ VMDouble* Universe::NewDouble(double value) {
 
 VMFrame* Universe::NewFrame(VMFrame* previousFrame, VMMethod* method) {
     VMFrame* result = nullptr;
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-    result = load_ptr(method->GetCachedFrame());
+#ifdef FRAME_OPTIMIZATION
+    result = method->UseCachedFrame();
     if (result != nullptr) {
-        method->SetCachedFrame(nullptr);
         result->SetPreviousFrameOnReuse(previousFrame);
         return result;
     }
@@ -984,7 +983,8 @@ void Universe::WalkGlobals(walk_heap_fn walk) {
 VMMethod* Universe::NewMethod(VMSymbol* signature, size_t numberOfBytecodes,
                               size_t numberOfConstants, size_t numLocals,
                               size_t maxStackDepth, LexicalScope* lexicalScope,
-                              vector<BackJump>& inlinedLoops) {
+                              vector<BackJump>& inlinedLoops,
+                              bool requiresClosureContext) {
     assert(lexicalScope != nullptr &&
            "A method is expected to have a lexical scope");
 
@@ -1005,9 +1005,9 @@ VMMethod* Universe::NewMethod(VMSymbol* signature, size_t numberOfBytecodes,
     // method needs space for the bytecodes and the pointers to the constants
     size_t const additionalBytes = PADDED_SIZE(
         numberOfBytecodes + (numberOfConstants * sizeof(VMObject*)));
-    auto* result = new (GetHeap<HEAP_CLS>(), additionalBytes)
-        VMMethod(signature, numberOfBytecodes, numberOfConstants, numLocals,
-                 maxStackDepth, lexicalScope, inlinedLoopsArr);
+    auto* result = new (GetHeap<HEAP_CLS>(), additionalBytes) VMMethod(
+        signature, numberOfBytecodes, numberOfConstants, numLocals,
+        maxStackDepth, lexicalScope, inlinedLoopsArr, requiresClosureContext);
 
     LOG_ALLOCATION("VMMethod", result->GetObjectSize());
     return result;

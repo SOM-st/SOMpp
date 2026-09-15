@@ -70,9 +70,9 @@ VMInvokable* MethodGenerationContext::Assemble() {
     // create a method instance with the given number of bytecodes and literals
     size_t const numLiterals = literals.size();
     size_t const numLocals = locals.size();
-    VMMethod* meth =
-        Universe::NewMethod(signature, bytecode.size(), numLiterals, numLocals,
-                            maxStackDepth, lexicalScope, inlinedLoops);
+    VMMethod* meth = Universe::NewMethod(
+        signature, bytecode.size(), numLiterals, numLocals, maxStackDepth,
+        lexicalScope, inlinedLoops, requiresClosureContext);
 
     // copy literals into the method
     for (size_t i = 0; i < numLiterals; i++) {
@@ -333,7 +333,12 @@ bool MethodGenerationContext::FindVar(std::string& var, int64_t* index,
             }
 
             (*context)++;
-            return outerGenc->FindVar(var, index, context, isArgument);
+            bool const found =
+                outerGenc->FindVar(var, index, context, isArgument);
+            if (found) {
+                SetRequiresClosureContext();
+            }
+            return found;
         }
         *isArgument = true;
     }
@@ -482,16 +487,21 @@ void MethodGenerationContext::removeLastBytecodes(size_t numBytecodes) {
     bytecode.erase(bytecode.end() - bytesToRemove, bytecode.end());
 }
 
+bool MethodGenerationContext::lastBytecodeIsPushBlock(size_t indexFromEnd) {
+    return LastBytecodeIs(indexFromEnd, BC_PUSH_BLOCK) ||
+           LastBytecodeIs(indexFromEnd, BC_PUSH_BLOCK_WITHOUT_CONTEXT);
+}
+
 bool MethodGenerationContext::hasOneLiteralBlockArgument() {
-    return LastBytecodeIs(0, BC_PUSH_BLOCK);
+    return lastBytecodeIsPushBlock(0);
 }
 
 bool MethodGenerationContext::hasTwoLiteralBlockArguments() {
-    if (!LastBytecodeIs(0, BC_PUSH_BLOCK)) {
+    if (!lastBytecodeIsPushBlock(0)) {
         return false;
     }
 
-    return LastBytecodeIs(1, BC_PUSH_BLOCK);
+    return lastBytecodeIsPushBlock(1);
 }
 
 /**
