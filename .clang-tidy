@@ -1,6 +1,7 @@
 ---
 Checks:          '*,
-                  -altera-*,
+                  -altera-id-dependent-backward-branch,
+                  -altera-unroll-loops,
                   -android-*,
                   -boost-use-ranges,
                   -bugprone-casting-through-void,

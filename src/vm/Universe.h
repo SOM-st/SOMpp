@@ -81,7 +81,8 @@ public:
                                size_t numberOfConstants, size_t numLocals,
                                size_t maxStackDepth,
                                LexicalScope* /*lexicalScope*/,
-                               vector<BackJump>& inlinedLoops);
+                               vector<BackJump>& inlinedLoops,
+                               bool requiresClosureContext);
     static VMObject* NewInstance(VMClass* /*classOfInstance*/);
     static VMObject* NewInstanceWithoutFields();
     static VMInteger* NewInteger(int64_t /*value*/);
@@ -117,6 +118,15 @@ public:
 
     Universe() = default;
     ~Universe();
+#ifdef LOG_RECEIVER_TYPES
+    struct stat_data {
+        long noCalls;
+        long noPrimitiveCalls;
+    };
+    static map<std::string, long> receiverTypes;
+    static map<std::string, stat_data> callStats;
+#endif
+    //
 
     static void Shutdown();
 

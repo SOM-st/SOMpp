@@ -45,7 +45,6 @@
 #include "../lib/InfInt.h"
 #include "../memory/Heap.h"
 #include "../misc/defs.h"
-#include "../vm/Statistics.h"
 #include "../vmobjects/IntegerBox.h"
 #include "../vmobjects/ObjectFormats.h"
 #include "../vmobjects/VMArray.h"
@@ -63,14 +62,16 @@
 #include "../vmobjects/VMVector.h"
 #include "Globals.h"
 #include "IsValidObject.h"
+#include "LogAllocation.h"
 #include "Print.h"
 #include "Shell.h"
-#include "Statistics.h"
 #include "Symbols.h"
 
 #if CACHE_INTEGER
 static gc_oop_t prebuildInts[INT_CACHE_MAX_VALUE - INT_CACHE_MIN_VALUE + 1];
 #endif
+
+#define INT_HIST_SIZE 1
 
 // Here we go:
 
@@ -78,10 +79,19 @@ uint8_t dumpBytecodes;
 uint8_t gcVerbosity;
 bool abortOnCoreLibHashMismatch = false;
 
+static std::string bm_name;
+
+static map<int64_t, int64_t> integerHist;
+
 map<GCSymbol*, gc_oop_t> Universe::globals;
 map<uint8_t, GCClass*> Universe::blockClassesByNoOfArgs;
 vector<std::string> Universe::classPath;
 size_t Universe::heapSize;
+
+#ifdef LOG_RECEIVER_TYPES
+map<std::string, long> Universe::receiverTypes;
+map<std::string, Universe::stat_data> Universe::callStats;
+#endif
 
 void Universe::Start(int32_t argc, char** argv) {
     BasicInit();
@@ -99,7 +109,46 @@ void Universe::Shutdown() {
                    to_string(Timer::GCTimer.GetTotalTime()) + "] msec\n");
     }
 
-    Statistics::OutputStatistics();
+#ifdef GENERATE_INTEGER_HISTOGRAM
+    std::string file_name_hist = std::string(bm_name);
+    file_name_hist.append("_integer_histogram.csv");
+    fstream hist_csv(file_name_hist.c_str(), ios::out);
+
+    for (map<long, long>::iterator it = integerHist.begin();
+         it != integerHist.end();
+         it++) {
+        hist_csv << it->first << ", " << it->second << endl;
+    }
+#endif
+
+#ifdef LOG_RECEIVER_TYPES
+    std::string file_name_receivers = std::string(bm_name);
+    file_name_receivers.append("_receivers.csv");
+    fstream receivers(file_name_receivers.c_str(), ios::out);
+    for (map<std::string, long>::iterator it = Universe::receiverTypes.begin();
+         it != Universe::receiverTypes.end();
+         it++) {
+        receivers << it->first << ",  " << it->second << endl;
+    }
+
+    std::string file_name_send_types = std::string(bm_name);
+    file_name_send_types.append("_send_types.csv");
+    fstream send_stat(file_name_send_types.c_str(), ios::out);
+    send_stat << "#name, percentage_primitive_calls, no_primitive_calls, "
+                 "no_non_primitive_calls"
+              << endl;
+    for (map<std::string, Universe::stat_data>::iterator it =
+             Universe::callStats.begin();
+         it != Universe::callStats.end();
+         it++) {
+        send_stat << it->first << ", " << setiosflags(ios::fixed)
+                  << setprecision(2)
+                  << (double)(it->second.noPrimitiveCalls) /
+                         (double)(it->second.noCalls)
+                  << ", " << it->second.noPrimitiveCalls << ", "
+                  << it->second.noCalls - it->second.noPrimitiveCalls << endl;
+    }
+#endif
 }
 
 static void printVmConfig() {
@@ -283,7 +332,7 @@ VMMethod* Universe::createBootstrapMethod(VMClass* holder,
     auto* bootStrapScope = new LexicalScope(nullptr, {}, {});
     VMMethod* bootstrapMethod =
         NewMethod(SymbolFor("bootstrap"), 1, 0, 0, numArgsOfMsgSend,
-                  bootStrapScope, inlinedLoops);
+                  bootStrapScope, inlinedLoops, false);
 
     bootstrapMethod->SetBytecode(0, BC_HALT);
     bootstrapMethod->SetHolder(holder);
@@ -295,7 +344,7 @@ vm_oop_t Universe::interpret(const std::string& className,
     // This method assumes that SOM++ was already initialized by executing a
     // Hello World program as part of the unittest main.
 
-    Statistics::SetMainName("BasicInterpreterTests");
+    bm_name = "BasicInterpreterTests";
 
     VMSymbol* classNameSym = SymbolFor(className);
     VMClass* clazz = LoadClass(classNameSym);
@@ -348,7 +397,7 @@ vm_oop_t Universe::interpretMethod(VMObject* receiver, VMInvokable* initialize,
 }
 
 void Universe::initialize(int32_t _argc, char** _argv) {
-    Statistics::Initialize();
+    InitializeAllocationLog();
 
     heapSize = 1ULL * 1024 * 1024;
 
@@ -356,7 +405,7 @@ void Universe::initialize(int32_t _argc, char** _argv) {
 
     // remember file that was executed (for writing statistics)
     if (!argv.empty()) {
-        Statistics::SetMainName(argv[0]);
+        bm_name = argv[0];
     }
 
     Heap<HEAP_CLS>::InitializeHeap(heapSize);
@@ -649,7 +698,7 @@ VMVector* Universe::NewVector(size_t size, VMClass* cls) {
     auto* result =
         new (GetHeap<HEAP_CLS>(), 0) VMVector(first, last, storageArray);
     result->SetClass(cls);
-    recordStat(Allocation, "VMVector", result->GetObjectSize());
+    LOG_ALLOCATION("VMVector", result->GetObjectSize());
     return result;
 }
 
@@ -675,7 +724,7 @@ VMArray* Universe::NewArray(size_t size) {
 
     result->SetClass(load_ptr(arrayClass));
 
-    recordStat(Allocation, "VMArray", result->GetObjectSize());
+    LOG_ALLOCATION("VMArray", result->GetObjectSize());
     return result;
 }
 
@@ -703,7 +752,7 @@ VMArray* Universe::NewExpandedArrayFromArray(size_t size, VMArray* array) {
 
     result->SetClass(load_ptr(arrayClass));
 
-    recordStat(Allocation, "VMArray", result->GetObjectSize());
+    LOG_ALLOCATION("VMArray", result->GetObjectSize());
 
     // Now copy the contents of the old array into the new one
     for (size_t i = 0; i < currentArraySize; ++i) {
@@ -761,7 +810,7 @@ VMBlock* Universe::NewBlock(VMInvokable* method, VMFrame* context,
     auto* result = new (GetHeap<HEAP_CLS>(), 0) VMBlock(method, context);
     result->SetClass(GetBlockClassWithArgs(arguments));
 
-    recordStat(Allocation, "VMBlock", result->GetObjectSize());
+    LOG_ALLOCATION("VMBlock", result->GetObjectSize());
     return result;
 }
 
@@ -779,21 +828,20 @@ VMClass* Universe::NewClass(VMClass* classOfClass) {
 
     result->SetClass(classOfClass);
 
-    recordStat(Allocation, "VMClass", result->GetObjectSize());
+    LOG_ALLOCATION("VMClass", result->GetObjectSize());
     return result;
 }
 
 VMDouble* Universe::NewDouble(double value) {
-    recordStat(Allocation, "VMDouble", sizeof(VMDouble));
+    LOG_ALLOCATION("VMDouble", sizeof(VMDouble));
     return new (GetHeap<HEAP_CLS>(), 0) VMDouble(value);
 }
 
 VMFrame* Universe::NewFrame(VMFrame* previousFrame, VMMethod* method) {
     VMFrame* result = nullptr;
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-    result = load_ptr(method->GetCachedFrame());
+#ifdef FRAME_OPTIMIZATION
+    result = method->UseCachedFrame();
     if (result != nullptr) {
-        method->SetCachedFrame(nullptr);
         result->SetPreviousFrameOnReuse(previousFrame);
         return result;
     }
@@ -806,7 +854,7 @@ VMFrame* Universe::NewFrame(VMFrame* previousFrame, VMMethod* method) {
     result = new (GetHeap<HEAP_CLS>(), additionalBytes)
         VMFrame(additionalBytes, method, previousFrame);
 
-    recordStat(Allocation, "VMFrame", result->GetObjectSize());
+    LOG_ALLOCATION("VMFrame", result->GetObjectSize());
     return result;
 }
 
@@ -818,8 +866,8 @@ VMObject* Universe::NewInstance(VMClass* classOfInstance) {
         VMObject(numOfFields, additionalBytes + sizeof(VMObject));
     result->SetClass(classOfInstance);
 
-    recordStat(Allocation, classOfInstance->GetName()->GetStdString(),
-               result->GetObjectSize());
+    LOG_ALLOCATION(classOfInstance->GetName()->GetStdString(),
+                   result->GetObjectSize());
     return result;
 }
 
@@ -829,7 +877,9 @@ VMObject* Universe::NewInstanceWithoutFields() {
 }
 
 VMInteger* Universe::NewInteger(int64_t value) {
-    recordStat(IntegerHistogram, value);
+#ifdef GENERATE_INTEGER_HISTOGRAM
+    integerHist[value / INT_HIST_SIZE] = integerHist[value / INT_HIST_SIZE] + 1;
+#endif
 
 #if CACHE_INTEGER
     size_t const index = (size_t)value - (size_t)INT_CACHE_MIN_VALUE;
@@ -838,7 +888,7 @@ VMInteger* Universe::NewInteger(int64_t value) {
     }
 #endif
 
-    recordStat(Allocation, "VMInteger", sizeof(VMInteger));
+    LOG_ALLOCATION("VMInteger", sizeof(VMInteger));
     return new (GetHeap<HEAP_CLS>(), 0) VMInteger(value);
 }
 
@@ -864,7 +914,7 @@ VMClass* Universe::NewMetaclassClass() {
     result->SetClass(mclass);
     mclass->SetClass(result);
 
-    recordStat(Allocation, "VMClass", result->GetObjectSize());
+    LOG_ALLOCATION("VMClass", result->GetObjectSize());
     return result;
 }
 
@@ -933,7 +983,8 @@ void Universe::WalkGlobals(walk_heap_fn walk) {
 VMMethod* Universe::NewMethod(VMSymbol* signature, size_t numberOfBytecodes,
                               size_t numberOfConstants, size_t numLocals,
                               size_t maxStackDepth, LexicalScope* lexicalScope,
-                              vector<BackJump>& inlinedLoops) {
+                              vector<BackJump>& inlinedLoops,
+                              bool requiresClosureContext) {
     assert(lexicalScope != nullptr &&
            "A method is expected to have a lexical scope");
 
@@ -954,11 +1005,11 @@ VMMethod* Universe::NewMethod(VMSymbol* signature, size_t numberOfBytecodes,
     // method needs space for the bytecodes and the pointers to the constants
     size_t const additionalBytes = PADDED_SIZE(
         numberOfBytecodes + (numberOfConstants * sizeof(VMObject*)));
-    auto* result = new (GetHeap<HEAP_CLS>(), additionalBytes)
-        VMMethod(signature, numberOfBytecodes, numberOfConstants, numLocals,
-                 maxStackDepth, lexicalScope, inlinedLoopsArr);
+    auto* result = new (GetHeap<HEAP_CLS>(), additionalBytes) VMMethod(
+        signature, numberOfBytecodes, numberOfConstants, numLocals,
+        maxStackDepth, lexicalScope, inlinedLoopsArr, requiresClosureContext);
 
-    recordStat(Allocation, "VMMethod", result->GetObjectSize());
+    LOG_ALLOCATION("VMMethod", result->GetObjectSize());
     return result;
 }
 
@@ -970,7 +1021,7 @@ VMString* Universe::NewString(const size_t length, const char* str) {
     auto* result =
         new (GetHeap<HEAP_CLS>(), PADDED_SIZE(length)) VMString(length, str);
 
-    recordStat(Allocation, "VMString", result->GetObjectSize());
+    LOG_ALLOCATION("VMString", result->GetObjectSize());
     return result;
 }
 
@@ -981,7 +1032,7 @@ VMClass* Universe::NewSystemClass() {
     systemClass->SetClass(mclass);
     mclass->SetClass(load_ptr(metaClassClass));
 
-    recordStat(Allocation, "VMClass", systemClass->GetObjectSize());
+    LOG_ALLOCATION("VMClass", systemClass->GetObjectSize());
     return systemClass;
 }
 

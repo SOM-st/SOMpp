@@ -8,7 +8,7 @@
 #include "../misc/defs.h"
 #include "../vmobjects/ObjectFormats.h"
 #include "../vmobjects/VMSymbol.h"
-#include "Statistics.h"
+#include "LogAllocation.h"
 
 static map<std::string, GCSymbol*> symbolsMap;
 
@@ -27,7 +27,7 @@ VMSymbol* NewSymbol(const size_t length, const char* str) {
         new (GetHeap<HEAP_CLS>(), PADDED_SIZE(length)) VMSymbol(length, str);
     symbolsMap[std::string(str, length)] = store_root(result);
 
-    recordStat(Allocation, "VMSymbol", result->GetObjectSize());
+    LOG_ALLOCATION("VMSymbol", result->GetObjectSize());
     return result;
 }
 

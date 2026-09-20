@@ -12,8 +12,8 @@
 #include "../memory/Heap.h"
 #include "../misc/debug.h"
 #include "../misc/defs.h"
+#include "../vm/LogAllocation.h"
 #include "../vm/Print.h"
-#include "../vm/Statistics.h"
 #include "../vm/Universe.h"
 #include "AbstractObject.h"
 #include "ObjectFormats.h"
@@ -23,7 +23,7 @@ VMTrivialMethod* MakeLiteralReturn(VMSymbol* sig, vector<Variable>& arguments,
                                    vm_oop_t literal) {
     auto* result =
         new (GetHeap<HEAP_CLS>(), 0) VMLiteralReturn(sig, arguments, literal);
-    recordStat(Allocation, "VMLiteralReturn", result->GetObjectSize());
+    LOG_ALLOCATION("VMLiteralReturn", result->GetObjectSize());
     return result;
 }
 
@@ -31,7 +31,7 @@ VMTrivialMethod* MakeGlobalReturn(VMSymbol* sig, vector<Variable>& arguments,
                                   VMSymbol* globalName) {
     auto* result =
         new (GetHeap<HEAP_CLS>(), 0) VMGlobalReturn(sig, arguments, globalName);
-    recordStat(Allocation, "VMGlobalReturn", result->GetObjectSize());
+    LOG_ALLOCATION("VMGlobalReturn", result->GetObjectSize());
     return result;
 }
 
@@ -39,7 +39,7 @@ VMTrivialMethod* MakeGetter(VMSymbol* sig, vector<Variable>& arguments,
                             size_t fieldIndex) {
     auto* result =
         new (GetHeap<HEAP_CLS>(), 0) VMGetter(sig, arguments, fieldIndex);
-    recordStat(Allocation, "VMGetter", result->GetObjectSize());
+    LOG_ALLOCATION("VMGetter", result->GetObjectSize());
     return result;
 }
 
@@ -47,7 +47,7 @@ VMTrivialMethod* MakeSetter(VMSymbol* sig, vector<Variable>& arguments,
                             size_t fieldIndex, size_t argIndex) {
     auto* result = new (GetHeap<HEAP_CLS>(), 0)
         VMSetter(sig, arguments, fieldIndex, argIndex);
-    recordStat(Allocation, "VMSetter", result->GetObjectSize());
+    LOG_ALLOCATION("VMSetter", result->GetObjectSize());
     return result;
 }
 

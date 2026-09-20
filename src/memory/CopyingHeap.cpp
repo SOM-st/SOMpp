@@ -14,10 +14,10 @@
 CopyingHeap::CopyingHeap(size_t objectSpaceSize)
     : Heap<CopyingHeap>(new CopyingCollector(this)),
       currentBuffer(malloc(objectSpaceSize)),
-      oldBuffer(malloc(objectSpaceSize)),
-      currentBufferEnd((void*)((size_t)currentBuffer + objectSpaceSize)),
       collectionLimit((void*)((size_t)currentBuffer +
                               ((size_t)((double)objectSpaceSize * 0.9)))),
+      currentBufferEnd((void*)((size_t)currentBuffer + objectSpaceSize)),
+      oldBuffer(malloc(objectSpaceSize)),
       oldBufferEnd((void*)((size_t)oldBuffer + objectSpaceSize)),
       nextFreePosition(currentBuffer) {
     memset(currentBuffer, 0x0, objectSpaceSize);
