@@ -48,7 +48,7 @@ void EmitPUSHARGUMENT(MethodGenerationContext& mgenc, const Parser& parser,
 void EmitPUSHFIELD(MethodGenerationContext& mgenc, const Parser& parser,
                    VMSymbol* field);
 void EmitPUSHBLOCK(MethodGenerationContext& mgenc, const Parser& parser,
-                   VMInvokable* block);
+                   VMInvokable* block, bool withContext);
 void EmitPUSHCONSTANT(MethodGenerationContext& mgenc, const Parser& parser,
                       vm_oop_t cst);
 void EmitPUSHCONSTANT(MethodGenerationContext& mgenc, uint8_t literalIndex);

@@ -36,6 +36,7 @@
 #include "../vm/Globals.h"
 #include "../vm/IsValidObject.h"
 #include "../vm/Symbols.h"
+#include "../vm/Universe.h"
 #include "../vmobjects/ObjectFormats.h"
 #include "../vmobjects/Signature.h"
 #include "../vmobjects/VMMethod.h"
@@ -161,9 +162,14 @@ void EmitPUSHFIELD(MethodGenerationContext& mgenc, const Parser& parser,
 }
 
 void EmitPUSHBLOCK(MethodGenerationContext& mgenc, const Parser& parser,
-                   VMInvokable* block) {
+                   VMInvokable* block, bool withContext) {
     const uint8_t idx = mgenc.AddLiteralIfAbsent(block, parser);
-    Emit2(mgenc, BC_PUSH_BLOCK, idx, 1);
+
+    if (withContext) {
+        Emit2(mgenc, BC_PUSH_BLOCK, idx, 1);
+    } else {
+        Emit2(mgenc, BC_PUSH_BLOCK_NO_CTX, idx, 1);
+    }
 }
 
 void EmitPUSHCONSTANT(MethodGenerationContext& mgenc, const Parser& parser,
@@ -226,6 +232,9 @@ void EmitPUSHGLOBAL(MethodGenerationContext& mgenc, const Parser& parser,
     } else {
         const uint8_t idx = mgenc.AddLiteralIfAbsent(global, parser);
         Emit2(mgenc, BC_PUSH_GLOBAL, idx, 1);
+        if (!Universe::HasGlobal(global)) {
+            mgenc.MarkAccessingOuterScopes();
+        }
     }
 }
 
@@ -346,6 +355,7 @@ void EmitRETURNLOCAL(MethodGenerationContext& mgenc, const Parser& parser) {
 
 void EmitRETURNNONLOCAL(MethodGenerationContext& mgenc) {
     Emit1(mgenc, BC_RETURN_NON_LOCAL, 0);
+    mgenc.MarkAsDoingNonLocalReturn();
 }
 
 void EmitRETURNFIELD(MethodGenerationContext& mgenc, const Parser& parser,

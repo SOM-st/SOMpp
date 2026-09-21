@@ -103,6 +103,7 @@ private:
     static void doPushField(size_t bytecodeIndex);
     static void doPushFieldWithIndex(uint8_t fieldIndex);
     static void doPushBlock(size_t bytecodeIndex);
+    static void doPushBlockWithoutContext(size_t bytecodeIndex);
 
     static inline void doPushConstant(size_t bytecodeIndex) {
         vm_oop_t constant = method->GetConstant(bytecodeIndex);

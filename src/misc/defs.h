@@ -213,6 +213,10 @@ typedef PagedMarkSweepHeap HEAP_CLS;
   #define STATS_CALLS false
 #endif
 
+#ifndef STATS_BLOCKS
+  #define STATS_BLOCKS false
+#endif
+
 #ifdef _MSC_VER
 typedef unsigned long long uint64_t;
 typedef long long int64_t;

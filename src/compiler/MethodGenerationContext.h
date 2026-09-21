@@ -73,6 +73,24 @@ public:
 
     void MarkFinished();
 
+    void MarkAccessingOuterScopes() {
+        MethodGenerationContext* mgenc = this;
+        while (mgenc != nullptr) {
+            mgenc->accessesVariablesOfOuterScope = true;
+            mgenc = mgenc->GetOuter();
+        }
+    }
+
+    void MarkAsDoingNonLocalReturn() {
+        throwsNonLocalReturn = true;
+
+        MethodGenerationContext* ctx = outerGenc;
+        while (ctx->outerGenc != nullptr) {
+            ctx->throwsNonLocalReturn = true;
+            ctx = ctx->outerGenc;
+        }
+    }
+
     [[nodiscard]] ClassGenerationContext* GetHolder() const {
         return &holderGenc;
     }
@@ -127,6 +145,10 @@ public:
 
     bool LastBytecodeIs(size_t indexFromEnd, uint8_t bytecode);
 
+    [[nodiscard]] bool RequiresClosureContext() const {
+        return throwsNonLocalReturn || accessesVariablesOfOuterScope;
+    }
+
 private:
     VMTrivialMethod* assembleTrivialMethod();
     VMTrivialMethod* assembleLiteralReturn(uint8_t pushCandidate);
@@ -140,6 +162,7 @@ private:
     void removeLastBytecodes(size_t numBytecodes);
     void removeLastBytecodeAt(size_t indexFromEnd);
 
+    bool lastBytecodeIsPushBlock(size_t indexFromEnd);
     bool hasOneLiteralBlockArgument();
     bool hasTwoLiteralBlockArguments();
     uint8_t lastBytecodeAt(size_t indexFromEnd);
@@ -185,6 +208,9 @@ private:
     std::vector<BackJump> inlinedLoops;
 
     bool isCurrentlyInliningABlock{false};
+
+    bool throwsNonLocalReturn{false};
+    bool accessesVariablesOfOuterScope{false};
 
     make_testable(public);
     vm_oop_t GetLiteral(size_t idx) { return literals.at(idx); }
