@@ -1025,10 +1025,10 @@ void Interpreter::doReturnNonLocal() {
         vm_oop_t sender = outerContext->GetArgumentInCurrentContext(0);
         vm_oop_t arguments[] = {block};
 
-        popFrame();
+        VMFrame const* const blockFrame = popFrame();
 
-        // Pop old arguments from stack
-        VMMethod const* const method = GetFrame()->GetMethod();
+        // Pop the block's arguments from the stack of the sender of #value
+        VMMethod const* const method = blockFrame->GetMethod();
         uint8_t const numberOfArgs = method->GetNumberOfArguments();
         for (uint8_t i = 0; i < numberOfArgs; ++i) {
             GetFrame()->Pop();
