@@ -21,9 +21,11 @@ vm_oop_t ParseInteger(const char* str, bool negateValue) {
         return NEW_INT(0);
     }
 
+    // the digits don't fit an int64_t, but a negated value still might, so
+    // NewInt decides
     const bool rangeError = errno == ERANGE;
     if (rangeError) {
-        return Universe::NewBigIntegerFromStr(str, negateValue);
+        return Universe::NewInt(negateValue ? -InfInt(str) : InfInt(str));
     }
 
     // the normal case
