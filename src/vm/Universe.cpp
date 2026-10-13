@@ -295,7 +295,7 @@ vm_oop_t Universe::interpret(const std::string& className,
     // This method assumes that SOM++ was already initialized by executing a
     // Hello World program as part of the unittest main.
 
-    Statistics::SetMainName("BasicInterpreterTests");
+    Statistics::SetMainArgs({"BasicInterpreterTests"});
 
     VMSymbol* classNameSym = SymbolFor(className);
     VMClass* clazz = LoadClass(classNameSym);
@@ -356,7 +356,7 @@ void Universe::initialize(int32_t _argc, char** _argv) {
 
     // remember file that was executed (for writing statistics)
     if (!argv.empty()) {
-        Statistics::SetMainName(argv[0]);
+        Statistics::SetMainArgs(argv);
     }
 
     Heap<HEAP_CLS>::InitializeHeap(heapSize);

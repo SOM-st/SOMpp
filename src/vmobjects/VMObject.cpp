@@ -83,7 +83,9 @@ void VMObject::WalkObjects(walk_heap_fn walk) {
 
     size_t const numFields = GetNumberOfFields();
     for (size_t i = 0; i < numFields; ++i) {
-        FIELDS[i] = walk(tmp_ptr(GetField(i)));
+        if (FIELDS[i] != nullptr) {
+            FIELDS[i] = walk(tmp_ptr(GetField(i)));
+        }
     }
 }
 

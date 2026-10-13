@@ -112,6 +112,11 @@ if (STATS_CALLS)
   add_definitions(-DSTATS_CALLS=true)
 endif ()
 
+option(STATS_BLOCKS "Generate block statistics" FALSE)
+if (STATS_BLOCKS)
+  add_definitions(-DSTATS_BLOCKS=true)
+endif ()
+
 option(BYTECODE_HEATMAP
   "Count per-method bytecode hits and show them in the disassembler" FALSE)
 if (BYTECODE_HEATMAP)

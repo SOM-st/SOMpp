@@ -359,7 +359,7 @@ void BytecodeGenerationTest::testIfTrueWithLiteralReturn() {
     ifTrueWithLiteralReturn("false", BC_PUSH_CONSTANT_1);
     ifTrueWithLiteralReturn("nil", BC_PUSH_NIL);
     ifTrueWithLiteralReturn("SomeGlobal", BC(BC_PUSH_GLOBAL, 1));
-    ifTrueWithLiteralReturn("[]", BC(BC_PUSH_BLOCK, 1));
+    ifTrueWithLiteralReturn("[]", BC(BC_PUSH_BLOCK_NO_CTX, 1));
     ifTrueWithLiteralReturn("[ self ]", BC(BC_PUSH_BLOCK, 1));
 }
 
@@ -374,7 +374,8 @@ void BytecodeGenerationTest::ifTrueWithLiteralReturn(std::string literal,
     auto bytecodes = methodToBytecode(source.data());
 
     bool const twoByte2 = bytecode.bytecode == BC_PUSH_GLOBAL ||
-                          bytecode.bytecode == BC_PUSH_BLOCK;
+                          bytecode.bytecode == BC_PUSH_BLOCK ||
+                          bytecode.bytecode == BC_PUSH_BLOCK_NO_CTX;
 
     check(bytecodes,
           {BC_PUSH_SELF, BC(BC_SEND_1, 0),
@@ -397,7 +398,7 @@ void BytecodeGenerationTest::testIfTrueWithSomethingAndLiteralReturn() {
     ifTrueWithSomethingAndLiteralReturn("false", BC_PUSH_CONSTANT_2);
     ifTrueWithSomethingAndLiteralReturn("nil", BC_PUSH_NIL);
     ifTrueWithSomethingAndLiteralReturn("SomeGlobal", BC(BC_PUSH_GLOBAL, 2));
-    ifTrueWithSomethingAndLiteralReturn("[]", BC(BC_PUSH_BLOCK, 2));
+    ifTrueWithSomethingAndLiteralReturn("[]", BC(BC_PUSH_BLOCK_NO_CTX, 2));
     ifTrueWithSomethingAndLiteralReturn("[ self ]", BC(BC_PUSH_BLOCK, 2));
 }
 
@@ -415,7 +416,8 @@ void BytecodeGenerationTest::ifTrueWithSomethingAndLiteralReturn(
     auto bytecodes = methodToBytecode(source.data());
 
     bool const twoByte2 = bytecode.bytecode == BC_PUSH_GLOBAL ||
-                          bytecode.bytecode == BC_PUSH_BLOCK;
+                          bytecode.bytecode == BC_PUSH_BLOCK ||
+                          bytecode.bytecode == BC_PUSH_BLOCK_NO_CTX;
 
     check(bytecodes,
           {BC_PUSH_SELF, BC(BC_SEND_1, 0),
@@ -1017,7 +1019,7 @@ void BytecodeGenerationTest::testTrivialMethodInlining() {
     trivialMethodInlining("nil", BC_PUSH_NIL);
     trivialMethodInlining("Nil", BC(BC_PUSH_GLOBAL, 1));
     trivialMethodInlining("UnknownGlobal", BC(BC_PUSH_GLOBAL, 1));
-    trivialMethodInlining("[]", BC(BC_PUSH_BLOCK, 1));
+    trivialMethodInlining("[]", BC(BC_PUSH_BLOCK_NO_CTX, 1));
     trivialMethodInlining("[ self ]", BC(BC_PUSH_BLOCK, 1));
 }
 
@@ -1027,7 +1029,8 @@ void BytecodeGenerationTest::trivialMethodInlining(const std::string& literal,
     auto bytecodes = methodToBytecode(source.data());
 
     bool const isLongerBytecode = bytecode.bytecode == BC_PUSH_GLOBAL ||
-                                  bytecode.bytecode == BC_PUSH_BLOCK;
+                                  bytecode.bytecode == BC_PUSH_BLOCK ||
+                                  bytecode.bytecode == BC_PUSH_BLOCK_NO_CTX;
     check(bytecodes, {BC_PUSH_CONSTANT_0,
                       BC(BC_JUMP_ON_FALSE_TOP_NIL, isLongerBytecode ? 5 : 4, 0),
                       bytecode, BC_RETURN_SELF});

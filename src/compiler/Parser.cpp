@@ -554,7 +554,8 @@ bool Parser::primary(MethodGenerationContext& mgenc) {
             nestedBlock(bgenc);
 
             VMInvokable* blockMethod = bgenc.Assemble();
-            EmitPUSHBLOCK(mgenc, *this, blockMethod);
+            EmitPUSHBLOCK(mgenc, *this, blockMethod,
+                          bgenc.RequiresClosureContext());
             break;
         }
         default:

@@ -10,12 +10,15 @@
 
 using namespace std;
 
-string Statistics::mainName;
+vector<std::string> Statistics::mainArgs;
 map<int64_t, int64_t> Statistics::integerHist;
 map<string, struct allocStatsData> Statistics::allocationStats;
 
 map<string, int64_t> Statistics::receiverTypes;
 map<string, struct receiverStatData> Statistics::callStats;
+
+int64_t Statistics::blockActivationWithContext = 0;
+int64_t Statistics::blockActivationWithoutContext = 0;
 
 void Statistics::Initialize() {}
 
@@ -24,10 +27,15 @@ void Statistics::OutputStatistics() {
     outputAllocations();
     outputReceiverTypes();
     outputSendTypes();
+    outputBlockStats();
 }
 
 void Statistics::outputSendTypes() {
-    string file_name_send_types = string(mainName);
+    if (callStats.empty()) {
+        return;
+    }
+
+    string file_name_send_types = argvFileName();
     file_name_send_types.append("_send_types.csv");
     fstream send_stat(file_name_send_types.c_str(), ios::out);
     send_stat << "#name, percentage_primitive_calls, no_primitive_calls, "
@@ -45,7 +53,11 @@ void Statistics::outputSendTypes() {
 }
 
 void Statistics::outputReceiverTypes() {
-    string file_name_receivers = string(mainName);
+    if (receiverTypes.empty()) {
+        return;
+    }
+
+    string file_name_receivers = argvFileName();
     file_name_receivers.append("_receivers.csv");
     fstream receivers(file_name_receivers.c_str(), ios::out);
     for (auto& receiverType : receiverTypes) {
@@ -73,11 +85,26 @@ void Statistics::outputIntegerHistogram() {
         return;
     }
 
-    string file_name_hist = string(mainName);
+    string file_name_hist = argvFileName();
     file_name_hist.append("_integer_histogram.csv");
     fstream hist_csv(file_name_hist.c_str(), ios::out);
 
     for (auto& it : integerHist) {
         hist_csv << it.first << ", " << it.second << '\n';
     }
+}
+
+void Statistics::outputBlockStats() {
+    if (!BlockStatsEnabled) {
+        return;
+    }
+
+    string file_name_block_stats = argvFileName();
+    file_name_block_stats.append("_block_stats.csv");
+    fstream block_stats(file_name_block_stats.c_str(), ios::out);
+
+    block_stats << argvFileName() << ",with_context, " << blockActivationWithContext
+                << '\n';
+    block_stats << argvFileName() << ",without_context, "
+                << blockActivationWithoutContext << '\n';
 }
