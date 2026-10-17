@@ -89,8 +89,6 @@ public:
     static vm_oop_t NewInt(InfInt&& /*value*/);
 
     static VMBigInteger* NewBigIntegerFromInt(int64_t /*value*/);
-    static VMBigInteger* NewBigIntegerFromStr(const char* /*value*/,
-                                              bool /* negateValue */);
     static void WalkGlobals(walk_heap_fn /*walk*/);
     static VMDouble* NewDouble(double /*value*/);
     static VMClass* NewMetaclassClass();

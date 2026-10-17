@@ -845,15 +845,16 @@ VMInteger* Universe::NewInteger(int64_t value) {
 }
 
 vm_oop_t Universe::NewInt(InfInt&& value) {
-    if (value.isWithinSmallIntRange()) {
+    // An integer that NEW_INT can make has to be made by it, since integers
+    // compare equal only if they have the same representation. Without
+    // tagging, that's any 64-bit integer.
+    bool const fits =
+        USE_TAGGING ? value.isWithinSmallIntRange()
+                    : value >= InfInt(INT64_MIN) && value <= InfInt(INT64_MAX);
+    if (fits) {
         return NEW_INT(value.toInt64());
     }
     return new (GetHeap<HEAP_CLS>(), 0) VMBigInteger(std::move(value));
-}
-
-VMBigInteger* Universe::NewBigIntegerFromStr(const char* value,
-                                             bool negateValue) {
-    return new (GetHeap<HEAP_CLS>(), 0) VMBigInteger(value, negateValue);
 }
 
 VMBigInteger* Universe::NewBigIntegerFromInt(int64_t value) {
