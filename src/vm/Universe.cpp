@@ -792,14 +792,6 @@ VMDouble* Universe::NewDouble(double value) {
 
 VMFrame* Universe::NewFrame(VMFrame* previousFrame, VMMethod* method) {
     VMFrame* result = nullptr;
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-    result = load_ptr(method->GetCachedFrame());
-    if (result != nullptr) {
-        method->SetCachedFrame(nullptr);
-        result->SetPreviousFrameOnReuse(previousFrame);
-        return result;
-    }
-#endif
     size_t const length = method->GetNumberOfArguments() +
                           method->GetNumberOfLocals() +
                           method->GetMaximumNumberOfStackElements();

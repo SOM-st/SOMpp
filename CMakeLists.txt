@@ -75,7 +75,6 @@ set(INT_CACHE_MIN_VALUE -5  CACHE STRING "Lower bound of cached integers")
 set(INT_CACHE_MAX_VALUE 100 CACHE STRING "Upper bound of cached integers")
 
 option(USE_VECTOR_PRIMITIVES     "Use Vector primitives" TRUE)
-option(UNSAFE_FRAME_OPTIMIZATION "Enable unsafe frame optimization" FALSE)
 option(ADDITIONAL_ALLOCATION     "Enable additional allocations" FALSE)
 
 option(FOR_PROFILING "Compile for profiling" FALSE)
@@ -125,9 +124,6 @@ else ()
   add_definitions(-DUSE_VECTOR_PRIMITIVES=false)
 endif ()
 
-if (UNSAFE_FRAME_OPTIMIZATION)
-  add_definitions(-DUNSAFE_FRAME_OPTIMIZATION)
-endif ()
 if (ADDITIONAL_ALLOCATION)
   add_definitions(-DADDITIONAL_ALLOCATION)
 endif ()

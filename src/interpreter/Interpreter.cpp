@@ -722,11 +722,6 @@ VMFrame* Interpreter::popFrame() {
     SetFrame(GetFrame()->GetPreviousFrame());
 
     result->ClearPreviousFrame();
-
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-    // remember this frame as free frame
-    result->GetMethod()->SetCachedFrame(result);
-#endif
     return result;
 }
 

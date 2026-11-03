@@ -142,11 +142,6 @@ public:
 
     inline void SetBytecode(size_t indx, uint8_t val) { bytecodes[indx] = val; }
 
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-    void SetCachedFrame(VMFrame* frame);
-    GCFrame* GetCachedFrame() const;
-#endif
-
     void WalkObjects(walk_heap_fn /*unused*/) override;
 
     [[nodiscard]] inline size_t GetNumberOfIndexableFields() const {
@@ -217,10 +212,6 @@ private:
     make_testable(private);
     LexicalScope* lexicalScope;
     BackJump* inlinedLoops;
-
-#ifdef UNSAFE_FRAME_OPTIMIZATION
-    GCFrame* cachedFrame;
-#endif
 
 #ifdef BYTECODE_HEATMAP
     uint64_t* heatmap;

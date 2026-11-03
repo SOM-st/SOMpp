@@ -109,7 +109,6 @@ jobs:
         run: |
           build_options=(
               "BYTECODE_HEATMAP"
-              "UNSAFE_FRAME_OPTIMIZATION"
               "ADDITIONAL_ALLOCATION"
               "STATS_INT_HIST=true -DSTATS_ALLOC=true -DSTATS_CALLS"
           )
