@@ -105,17 +105,20 @@ void GenerationalCollector::MajorCollection() {
     // now that all objects are marked we can safely delete all allocated
     // objects that are not marked
     vector<AbstractVMObject*> survivors;
+    size_t survivorsSize = 0;
     for (auto* obj : heap->allocatedObjects) {
         assert(IsValidObject(obj));
 
         if ((obj->GetGCField() & MASK_OBJECT_IS_MARKED) != 0) {
             survivors.push_back(obj);
+            survivorsSize += obj->GetObjectSize();
             obj->SetGCField(MASK_OBJECT_IS_OLD);
         } else {
             heap->FreeObject(obj);
         }
     }
     heap->allocatedObjects.swap(survivors);
+    heap->matureObjectsSize = survivorsSize;
 }
 
 void GenerationalCollector::Collect() {
