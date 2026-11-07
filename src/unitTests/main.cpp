@@ -24,6 +24,7 @@
 #include "CloneObjectsTest.h"
 #include "HashingTest.h"
 #include "InfIntTests.h"
+#include "LargeObjectTest.h"
 #include "TrivialMethodTest.h"
 #include "WalkObjectsTest.h"
 
@@ -42,6 +43,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TrivialMethodTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(BasicInterpreterTests);
 CPPUNIT_TEST_SUITE_REGISTRATION(HashingTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(ClassFieldsTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(LargeObjectTest);
 
 int32_t main(int32_t ac, char** av) {
     Universe::Start(ac, av);

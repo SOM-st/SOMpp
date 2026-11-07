@@ -58,7 +58,6 @@
 #include "../vmobjects/VMInteger.h"
 #include "../vmobjects/VMMethod.h"
 #include "../vmobjects/VMObject.h"
-#include "../vmobjects/VMObjectBase.h"
 #include "../vmobjects/VMString.h"
 #include "../vmobjects/VMVector.h"
 #include "Globals.h"
@@ -656,23 +655,8 @@ VMVector* Universe::NewVector(size_t size, VMClass* cls) {
 VMArray* Universe::NewArray(size_t size) {
     size_t const additionalBytes = size * sizeof(VMObject*);
 
-    bool outsideNursery = false;  // NOLINT
-
-#if GC_TYPE == GENERATIONAL
-    // if the array is too big for the nursery, we will directly allocate a
-    // mature object
-    outsideNursery = additionalBytes + sizeof(VMArray) >
-                     GetHeap<HEAP_CLS>()->GetMaxNurseryObjectSize();
-#endif
-
-    auto* result = new (GetHeap<HEAP_CLS>(),
-                        additionalBytes ALLOC_OUTSIDE_NURSERY(outsideNursery))
+    auto* result = new (GetHeap<HEAP_CLS>(), additionalBytes)
         VMArray(size, additionalBytes);
-    // NOLINTNEXTLINE(misc-redundant-expression)
-    if ((GC_TYPE == GENERATIONAL) && outsideNursery) {
-        result->SetGCField(MASK_OBJECT_IS_OLD);
-    }
-
     result->SetClass(load_ptr(arrayClass));
 
     recordStat(Allocation, "VMArray", result->GetObjectSize());
@@ -682,25 +666,10 @@ VMArray* Universe::NewArray(size_t size) {
 VMArray* Universe::NewExpandedArrayFromArray(size_t size, VMArray* array) {
     size_t const additionalBytes = size * sizeof(VMObject*);
 
-    bool outsideNursery = false;  // NOLINT
-
     size_t const currentArraySize = array->GetNumberOfIndexableFields();
 
-#if GC_TYPE == GENERATIONAL
-    // if the array is too big for the nursery, we will directly allocate a
-    // mature object
-    outsideNursery = additionalBytes + sizeof(VMArray) >
-                     GetHeap<HEAP_CLS>()->GetMaxNurseryObjectSize();
-#endif
-
-    auto* result = new (GetHeap<HEAP_CLS>(),
-                        additionalBytes ALLOC_OUTSIDE_NURSERY(outsideNursery))
+    auto* result = new (GetHeap<HEAP_CLS>(), additionalBytes)
         VMArray(size, additionalBytes, currentArraySize);
-    // NOLINTNEXTLINE(misc-redundant-expression)
-    if ((GC_TYPE == GENERATIONAL) && outsideNursery) {
-        result->SetGCField(MASK_OBJECT_IS_OLD);
-    }
-
     result->SetClass(load_ptr(arrayClass));
 
     recordStat(Allocation, "VMArray", result->GetObjectSize());
