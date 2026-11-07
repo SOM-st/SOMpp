@@ -117,6 +117,28 @@ void WalkObjectsTest::testWalkSymbol() {
     CPPUNIT_ASSERT_EQUAL(NoOfFields_Symbol, walkedObjects.size());
 }
 
+void WalkObjectsTest::testWalkSymbolWithFullCache() {
+    VMSymbol* sym = SymbolFor("asString");
+    VMClass* classes[] = {load_ptr(integerClass), load_ptr(doubleClass),
+                          load_ptr(stringClass), load_ptr(symbolClass)};
+
+    static_assert(VMSymbol::CacheSize == 3,
+                  "CacheSize is assumed to be 3, otherwise, update the test");
+
+    for (VMClass* cls : classes) {
+        CPPUNIT_ASSERT(cls->LookupInvokable(sym) != nullptr);
+    }
+
+    walkedObjects.clear();
+    sym->WalkObjects(collectMembers);
+
+    // all three cached classes and their invokables
+    CPPUNIT_ASSERT_EQUAL((size_t)6, walkedObjects.size());
+    CPPUNIT_ASSERT(WalkerHasFound(tmp_ptr(classes[1])));
+    CPPUNIT_ASSERT(WalkerHasFound(tmp_ptr(classes[2])));
+    CPPUNIT_ASSERT(WalkerHasFound(tmp_ptr(classes[3])));
+}
+
 void WalkObjectsTest::testWalkClass() {
     walkedObjects.clear();
     VMClass* meta = Universe::NewMetaclassClass();
