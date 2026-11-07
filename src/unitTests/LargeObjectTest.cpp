@@ -67,6 +67,20 @@ void LargeObjectTest::testLargeObjectsSurviveGC() {
     Universe::SetGlobal(strName, load_ptr(nilObject));
 }
 
+void LargeObjectTest::testLargeObjectsRequestGC() {
+    GetHeap<HEAP_CLS>()->FullGC();
+    CPPUNIT_ASSERT(!GetHeap<HEAP_CLS>()->isCollectionTriggered());
+
+    size_t const arraySize = heapSize / 2 / sizeof(vm_oop_t);
+    for (size_t i = 0; i < 100; i += 1) {
+        Universe::NewArray(arraySize);
+        if (GetHeap<HEAP_CLS>()->isCollectionTriggered()) {
+            return;
+        }
+    }
+    CPPUNIT_FAIL("allocating only large objects did not request a GC");
+}
+
 #if GC_TYPE == GENERATIONAL
 
 static void assertIsMature(AbstractVMObject* obj) {

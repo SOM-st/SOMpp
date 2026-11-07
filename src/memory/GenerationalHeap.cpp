@@ -52,7 +52,8 @@ void* GenerationalHeap::AllocateMatureObject(size_t size) {
     }
     allocatedObjects.push_back(static_cast<AbstractVMObject*>(newObject));
     matureObjectsSize += size;
-    if (gcStressMode) {
+
+    if (matureObjectsSize > majorCollectionThreshold || gcStressMode) {
         requestGC();
     }
     return newObject;

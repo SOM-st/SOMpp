@@ -10,6 +10,7 @@ class LargeObjectTest : public CPPUNIT_NS::TestCase {
     // collection, so they can't allocate large objects when nearly full.
 #if GC_TYPE != MARK_SWEEP && GC_TYPE != COPYING
     CPPUNIT_TEST(testLargeObjectsSurviveGC);
+    CPPUNIT_TEST(testLargeObjectsRequestGC);
 #endif
 #if GC_TYPE == GENERATIONAL
     CPPUNIT_TEST(testTooLargeForNurseryGoesToMatureSpace);
@@ -23,6 +24,7 @@ public:
 
 private:
     static void testLargeObjectsSurviveGC();
+    static void testLargeObjectsRequestGC();
 #if GC_TYPE == GENERATIONAL
     static void testTooLargeForNurseryGoesToMatureSpace();
     static void testFullNurseryAllocatesInMatureSpace();

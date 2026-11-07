@@ -124,13 +124,15 @@ void GenerationalCollector::MajorCollection() {
 void GenerationalCollector::Collect() {
     DebugLog("GenGC Collect\n");
     Timer::GCTimer.Resume();
-    // reset collection trigger
-    heap->resetGCTrigger();
 
     MinorCollection();
-    if (heap->matureObjectsSize > majorCollectionThreshold) {
+    if (heap->matureObjectsSize > heap->majorCollectionThreshold) {
         MajorCollection();
-        majorCollectionThreshold = 2 * heap->matureObjectsSize;
+        heap->majorCollectionThreshold = 2 * heap->matureObjectsSize;
     }
+
+    // reset collection trigger only now, because promoting objects to the
+    // mature space during the collection may request a collection
+    heap->resetGCTrigger();
     Timer::GCTimer.Halt();
 }

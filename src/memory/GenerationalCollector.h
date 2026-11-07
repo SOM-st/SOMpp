@@ -10,8 +10,6 @@ public:
     void Collect() override;
 
 private:
-    uintptr_t majorCollectionThreshold{(uintptr_t)5 * 1024U * 1024U};  // 5 MB
-    size_t matureObjectsSize{0};
     void MajorCollection();
     void MinorCollection();
 };

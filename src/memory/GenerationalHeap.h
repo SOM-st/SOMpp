@@ -36,6 +36,7 @@ private:
     size_t nurserySize;
     size_t maxNurseryObjSize;
     size_t matureObjectsSize{0};
+    size_t majorCollectionThreshold{(size_t)5 * 1024U * 1024U};  // 5 MB
     void* nextFreePosition;
     void writeBarrier_OldHolder(VMObjectBase* holder,
                                 vm_oop_t referencedObject);
