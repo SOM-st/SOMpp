@@ -28,14 +28,15 @@ GenerationalHeap::GenerationalHeap(size_t objectSpaceSize)
 }
 
 void* GenerationalHeap::AllocateNurseryObject(size_t size) {
+    // if allocation does not fit, attempt allocation in old generation
+    if (size > maxNurseryObjSize ||
+        size > nursery_end - (size_t)nextFreePosition) {
+        return AllocateMatureObject(size);
+    }
+
     void* newObject = nextFreePosition;
     nextFreePosition =
         static_cast<void*>(static_cast<char*>(nextFreePosition) + size);
-    if ((size_t)nextFreePosition > nursery_end) {
-        ErrorPrint("\nFailed to allocate " + to_string(size) +
-                   " Bytes in nursery.\n");
-        Quit(-1);
-    }
     // let's see if we have to trigger the GC
     if (nextFreePosition > collectionLimit || gcStressMode) {
         requestGC();
@@ -51,7 +52,8 @@ void* GenerationalHeap::AllocateMatureObject(size_t size) {
     }
     allocatedObjects.push_back(static_cast<AbstractVMObject*>(newObject));
     matureObjectsSize += size;
-    if (gcStressMode) {
+
+    if (matureObjectsSize > majorCollectionThreshold || gcStressMode) {
         requestGC();
     }
     return newObject;
@@ -59,7 +61,7 @@ void* GenerationalHeap::AllocateMatureObject(size_t size) {
 
 void GenerationalHeap::writeBarrier_OldHolder(VMObjectBase* holder,
                                               vm_oop_t referencedObject) {
-    if (isObjectInNursery(referencedObject)) {
+    if (IsObjectInNursery(referencedObject)) {
         oldObjsWithRefToYoungObjs.push_back((size_t)holder);
         holder->SetGCField(holder->GetGCField() | MASK_SEEN_BY_WRITE_BARRIER);
     }

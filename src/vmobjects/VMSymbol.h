@@ -47,23 +47,19 @@ public:
 
     void WalkObjects(walk_heap_fn /*unused*/) override;
 
+    static constexpr size_t CacheSize = 3;
+
 private:
     const uint8_t numberOfArgumentsOfSignature;
-    GCClass* cachedClass_invokable[3]{};
+    GCClass* cachedClass_invokable[CacheSize]{};
     size_t nextCachePos{0};
-    GCInvokable* cachedInvokable[3]{};
+    GCInvokable* cachedInvokable[CacheSize]{};
 
     inline VMInvokable* GetCachedInvokable(const VMClass* cls) const {
-        if (cls == load_ptr(cachedClass_invokable[0])) {
-            return load_ptr(cachedInvokable[0]);
-        }
-
-        if (cls == load_ptr(cachedClass_invokable[1])) {
-            return load_ptr(cachedInvokable[1]);
-        }
-
-        if (cls == load_ptr(cachedClass_invokable[2])) {
-            return load_ptr(cachedInvokable[2]);
+        for (size_t i = 0; i < CacheSize; i++) {
+            if (cls == load_ptr(cachedClass_invokable[i])) {
+                return load_ptr(cachedInvokable[i]);
+            }
         }
         return nullptr;
     }

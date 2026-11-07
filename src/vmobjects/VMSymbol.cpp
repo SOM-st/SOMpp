@@ -41,7 +41,7 @@
 
 VMSymbol::VMSymbol(const size_t length, const char* const str)
     :  // set the chars-pointer to point at the position of the first character
-      VMString((char*)((intptr_t)&cachedInvokable + (3 * sizeof(VMInvokable*))),
+      VMString((char*)((intptr_t)&cachedInvokable + sizeof(cachedInvokable)),
                length),
       numberOfArgumentsOfSignature(
           Signature::DetermineNumberOfArguments(str, length)) {
@@ -67,7 +67,12 @@ VMClass* VMSymbol::GetClass() const {
 }
 
 void VMSymbol::WalkObjects(walk_heap_fn walk) {
-    for (size_t i = 0; i < nextCachePos; i++) {
+    // nextCachePos wraps around
+    // so, will need to look at all of them
+    for (size_t i = 0; i < CacheSize; i++) {
+        if (cachedClass_invokable[i] == nullptr) {
+            continue;
+        }
         walk_ptr(cachedClass_invokable[i], walk);
         walk_ptr(cachedInvokable[i], walk);
     }
@@ -80,5 +85,5 @@ std::string VMSymbol::AsDebugString() const {
 void VMSymbol::UpdateCachedInvokable(VMClass* cls, VMInvokable* invo) {
     store_ptr(cachedInvokable[nextCachePos], invo);
     store_ptr(cachedClass_invokable[nextCachePos], cls);
-    nextCachePos = (nextCachePos + 1) % 3;
+    nextCachePos = (nextCachePos + 1) % CacheSize;
 }

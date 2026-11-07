@@ -27,6 +27,10 @@ void Statistics::OutputStatistics() {
 }
 
 void Statistics::outputSendTypes() {
+    if (callStats.empty()) {
+        return;
+    }
+
     string file_name_send_types = string(mainName);
     file_name_send_types.append("_send_types.csv");
     fstream send_stat(file_name_send_types.c_str(), ios::out);
@@ -45,6 +49,10 @@ void Statistics::outputSendTypes() {
 }
 
 void Statistics::outputReceiverTypes() {
+    if (receiverTypes.empty()) {
+        return;
+    }
+
     string file_name_receivers = string(mainName);
     file_name_receivers.append("_receivers.csv");
     fstream receivers(file_name_receivers.c_str(), ios::out);

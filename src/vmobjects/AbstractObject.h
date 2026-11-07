@@ -42,7 +42,13 @@ public:
 
     [[nodiscard]] virtual std::string AsDebugString() const = 0;
 
-    AbstractVMObject() = default;
+    AbstractVMObject() { initGCField(); }
+    AbstractVMObject(const AbstractVMObject& other) : VMObjectBase(other) {
+        initGCField();
+    }
+    AbstractVMObject& operator=(const AbstractVMObject&) = delete;
+    AbstractVMObject(AbstractVMObject&&) = delete;
+    AbstractVMObject& operator=(AbstractVMObject&&) = delete;
     ~AbstractVMObject() override = default;
 
     [[nodiscard]] inline virtual size_t GetNumberOfFields() const {
@@ -56,6 +62,17 @@ public:
 
     int64_t GetFieldIndex(VMSymbol* fieldName) const;
 
+private:
+    inline void initGCField() {
+#if GC_TYPE == GENERATIONAL
+        // Any object may be allocated in the mature space, and needs to be
+        // marked as old from the start, for instance for the write barrier.
+        gcField =
+            GetHeap<HEAP_CLS>()->IsInNursery(this) ? 0 : MASK_OBJECT_IS_OLD;
+#endif
+    }
+
+public:
     virtual void WalkObjects(walk_heap_fn /*walk*/) {}
 
     [[nodiscard]] inline virtual VMSymbol* GetFieldName(

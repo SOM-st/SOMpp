@@ -35,6 +35,7 @@ class WalkObjectsTest : public CPPUNIT_NS::TestCase {
     CPPUNIT_TEST(testWalkObject);
     CPPUNIT_TEST(testWalkPrimitive);
     CPPUNIT_TEST(testWalkSymbol);
+    CPPUNIT_TEST(testWalkSymbolWithFullCache);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -54,4 +55,5 @@ private:
     static void testWalkObject();
     static void testWalkPrimitive();
     static void testWalkSymbol();
+    static void testWalkSymbolWithFullCache();
 };
